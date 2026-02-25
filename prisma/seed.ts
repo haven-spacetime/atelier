@@ -139,6 +139,19 @@ async function main() {
         lastContactedAt: daysAgo(7),
       },
     }),
+    // Brandon Nguyen — shop owner
+    prisma.customer.create({
+      data: {
+        name: "Brandon Nguyen",
+        email: "brandon@ateliermotors.com",
+        phone: "+1(714)867-4410",
+        address: "Atelier Motors, 18600 Main St, Huntington Beach, CA 92648",
+        notes:
+          "Shop owner. Personal McLaren kept in-house — full PPF + ceramic done in-house. Test account for CRM demos.",
+        tags: JSON.stringify(["owner", "vip"]),
+        lastContactedAt: daysAgo(0),
+      },
+    }),
   ]);
 
   console.log(`Created ${customers.length} customers.`);
@@ -304,6 +317,19 @@ async function main() {
         color: "Carmine Red",
         vin: "WP1AF2AY4RDA00100",
         notes: "Brand new from dealer. 0 miles. Full body PPF before first drive.",
+      },
+    }),
+    // Brandon Nguyen
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[10].id,
+        year: 2024,
+        make: "McLaren",
+        model: "750S Spider",
+        color: "Volcano Orange",
+        vin: "SBM14DCA5RW000888",
+        notes:
+          "Owner's personal vehicle. Full XPEL Ultimate Plus PPF + Ceramic Pro 9H done in-house.",
       },
     }),
   ]);
@@ -547,6 +573,30 @@ async function main() {
         scheduledDate: daysAgo(2),
         quotedPrice: 7500,
         depositAmount: 3750,
+        depositPaid: true,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Job 13 — Brandon Nguyen McLaren: PPF + Ceramic — COMPLETE
+    prisma.job.create({
+      data: {
+        customerId: customers[10].id,
+        vehicleId: vehicles[14].id,
+        type: "PPF",
+        status: "COMPLETE",
+        title: "Full PPF + Ceramic — 750S Spider (Owner's Car)",
+        description:
+          "Full XPEL Ultimate Plus PPF with Ceramic Pro 9H top coat. Done in-house by the team. Personal vehicle of the owner.",
+        estimatedHours: 36,
+        actualHours: 34,
+        materialNotes: "XPEL Ultimate Plus — 78 ft. Ceramic Pro 9H (4 layers) + top coat.",
+        assignedTo: "Danny",
+        bayNumber: 1,
+        scheduledDate: daysAgo(30),
+        completedDate: daysAgo(25),
+        quotedPrice: 0,
+        finalPrice: 0,
+        depositAmount: 0,
         depositPaid: true,
         photos: JSON.stringify([]),
       },
