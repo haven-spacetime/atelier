@@ -152,6 +152,32 @@ async function main() {
         lastContactedAt: daysAgo(0),
       },
     }),
+    // Tyler Vang — [11]
+    prisma.customer.create({
+      data: {
+        name: "Tyler Vang",
+        email: "tyler.vang@outlook.com",
+        phone: "(949) 555-0911",
+        address: "1 Monarch Beach Resort Dr, Dana Point, CA 92629",
+        notes:
+          "Bentley collector. Wanted a completely unique color change on the Flying Spur — chrome silver with satin gold accents. Loves standing out.",
+        tags: JSON.stringify(["vip", "wrap", "repeat"]),
+        lastContactedAt: daysAgo(3),
+      },
+    }),
+    // Natasha Kim — [12]
+    prisma.customer.create({
+      data: {
+        name: "Natasha Kim",
+        email: "natasha.kim@gmail.com",
+        phone: "(949) 555-0812",
+        address: "101 Fashion Island Blvd, Newport Beach, CA 92660",
+        notes:
+          "New customer. Picked up the M8 Competition straight from BMW and wanted full PPF before the first drive. Very detail-oriented.",
+        tags: JSON.stringify(["new", "ppf-only"]),
+        lastContactedAt: daysAgo(6),
+      },
+    }),
   ]);
 
   console.log(`Created ${customers.length} customers.`);
@@ -330,6 +356,31 @@ async function main() {
         vin: "SBM14DCA5RW000888",
         notes:
           "Owner's personal vehicle. Full XPEL Ultimate Plus PPF + Ceramic Pro 9H done in-house.",
+      },
+    }),
+    // Tyler Vang — [15]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[11].id,
+        year: 2023,
+        make: "Bentley",
+        model: "Flying Spur W12",
+        color: "Onyx Black",
+        vin: "SCBCR2ZA4PC099001",
+        notes:
+          "Color change wrap — Gloss Liquid Chrome Silver with Satin Black chrome delete and Satin Gold brightwork accents.",
+      },
+    }),
+    // Natasha Kim — [16]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[12].id,
+        year: 2024,
+        make: "BMW",
+        model: "M8 Competition",
+        color: "Frozen Marina Bay Blue",
+        vin: "WBSAE0C07NCJ00444",
+        notes: "Full body PPF — preserving the Frozen Bay Blue. Customer wants zero imperfections.",
       },
     }),
   ]);
@@ -601,6 +652,106 @@ async function main() {
         photos: JSON.stringify([]),
       },
     }),
+    // Job 13 — James Whitfield 918 Spyder: Full PPF + Ceramic + Tint — INVOICED [customers[2], vehicles[5]]
+    prisma.job.create({
+      data: {
+        customerId: customers[2].id,
+        vehicleId: vehicles[5].id,
+        type: "PPF",
+        status: "INVOICED",
+        title: "Full PPF + Ceramic + Tint — 918 Spyder",
+        description:
+          "Complete XPEL Ultimate Plus PPF, Ceramic Pro 9H 4-layer package, and XPEL XR Plus ceramic tint. Museum-quality full protection on a priceless car.",
+        estimatedHours: 45,
+        actualHours: 42,
+        materialNotes:
+          "XPEL Ultimate Plus — 90 ft. Ceramic Pro 9H (4 layers + top coat). XPEL XR Plus tint (all glass).",
+        assignedTo: "Mike",
+        bayNumber: 1,
+        scheduledDate: daysAgo(18),
+        completedDate: daysAgo(10),
+        quotedPrice: 15800,
+        finalPrice: 15800,
+        depositAmount: 8000,
+        depositPaid: true,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Job 14 — Diana Nakamura 911 S/T: Full PPF + Ceramic — INVOICED [customers[5], vehicles[8]]
+    prisma.job.create({
+      data: {
+        customerId: customers[5].id,
+        vehicleId: vehicles[8].id,
+        type: "PPF",
+        status: "INVOICED",
+        title: "Full PPF + Ceramic — 911 S/T",
+        description:
+          "Full body XPEL Ultimate Plus PPF with 2-stage paint correction. Ceramic Pro 9H 3-layer package on top. PTS color demands extra care.",
+        estimatedHours: 32,
+        actualHours: 30,
+        materialNotes:
+          "XPEL Ultimate Plus full kit. Paint correction supplies. Ceramic Pro 9H (3 layers + top coat).",
+        assignedTo: "Danny",
+        bayNumber: 3,
+        scheduledDate: daysAgo(12),
+        completedDate: daysAgo(5),
+        quotedPrice: 8500,
+        finalPrice: 8500,
+        depositAmount: 4250,
+        depositPaid: true,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Job 15 — Tyler Vang Bentley Flying Spur: Color Change Wrap — INVOICED [customers[11], vehicles[15]]
+    prisma.job.create({
+      data: {
+        customerId: customers[11].id,
+        vehicleId: vehicles[15].id,
+        type: "WRAP",
+        status: "INVOICED",
+        title: "Color Change Wrap — Flying Spur W12",
+        description:
+          "Full color change from Onyx Black to Gloss Liquid Chrome Silver. Chrome delete in Satin Black. Brightwork wrapped in Satin Gold. One of a kind.",
+        estimatedHours: 48,
+        actualHours: 50,
+        materialNotes:
+          "Avery Supreme Gloss Liquid Chrome Silver — 90 ft. 3M 1080 Satin Black for chrome delete. Avery Satin Gold for brightwork accents.",
+        assignedTo: "Mike",
+        bayNumber: 2,
+        scheduledDate: daysAgo(9),
+        completedDate: daysAgo(3),
+        quotedPrice: 9800,
+        finalPrice: 9800,
+        depositAmount: 4900,
+        depositPaid: true,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Job 16 — Natasha Kim BMW M8: Full PPF — INVOICED [customers[12], vehicles[16]]
+    prisma.job.create({
+      data: {
+        customerId: customers[12].id,
+        vehicleId: vehicles[16].id,
+        type: "PPF",
+        status: "INVOICED",
+        title: "Full PPF — M8 Competition",
+        description:
+          "Full body XPEL Ultimate Plus PPF. Customer wanted zero imperfections on the Frozen Marina Bay Blue factory paint before putting a single mile on it.",
+        estimatedHours: 28,
+        actualHours: 27,
+        materialNotes:
+          "XPEL Ultimate Plus full kit for M8. Extra care around door edges and rocker panels.",
+        assignedTo: "Danny",
+        bayNumber: 4,
+        scheduledDate: daysAgo(12),
+        completedDate: daysAgo(6),
+        quotedPrice: 7200,
+        finalPrice: 7200,
+        depositAmount: 3600,
+        depositPaid: true,
+        photos: JSON.stringify([]),
+      },
+    }),
   ]);
 
   console.log(`Created ${jobs.length} jobs.`);
@@ -662,6 +813,112 @@ async function main() {
         tax: 192.5,
         total: 2392.5,
         status: "DRAFT",
+      },
+    }),
+    // ATL-2026-001 — James Whitfield 918 Spyder PPF+Ceramic+Tint (PAID this month)
+    prisma.invoice.create({
+      data: {
+        jobId: jobs[13].id,
+        customerId: customers[2].id,
+        invoiceNumber: "ATL-2026-001",
+        lineItems: JSON.stringify([
+          { description: "Full PPF — XPEL Ultimate Plus", qty: 1, unitPrice: 11500, total: 11500 },
+          {
+            description: "Ceramic Pro 9H (4 layers + top coat)",
+            qty: 1,
+            unitPrice: 2800,
+            total: 2800,
+          },
+          {
+            description: "Window Tint — XPEL XR Plus (all glass)",
+            qty: 1,
+            unitPrice: 1500,
+            total: 1500,
+          },
+        ]),
+        subtotal: 15800,
+        tax: 1382.5,
+        total: 17182.5,
+        status: "PAID",
+        paidAt: daysAgo(10),
+      },
+    }),
+    // ATL-2026-002 — Diana Nakamura 911 S/T PPF+Ceramic (PAID this month)
+    prisma.invoice.create({
+      data: {
+        jobId: jobs[14].id,
+        customerId: customers[5].id,
+        invoiceNumber: "ATL-2026-002",
+        lineItems: JSON.stringify([
+          { description: "Full PPF — XPEL Ultimate Plus", qty: 1, unitPrice: 5800, total: 5800 },
+          { description: "Paint Correction (2-stage)", qty: 1, unitPrice: 1200, total: 1200 },
+          {
+            description: "Ceramic Pro 9H (3 layers + top coat)",
+            qty: 1,
+            unitPrice: 1500,
+            total: 1500,
+          },
+        ]),
+        subtotal: 8500,
+        tax: 743.75,
+        total: 9243.75,
+        status: "PAID",
+        paidAt: daysAgo(5),
+      },
+    }),
+    // ATL-2026-003 — Tyler Vang Flying Spur Color Change Wrap (PAID this month)
+    prisma.invoice.create({
+      data: {
+        jobId: jobs[15].id,
+        customerId: customers[11].id,
+        invoiceNumber: "ATL-2026-003",
+        lineItems: JSON.stringify([
+          {
+            description: "Color Change Wrap — Gloss Liquid Chrome Silver",
+            qty: 1,
+            unitPrice: 7200,
+            total: 7200,
+          },
+          {
+            description: "Chrome Delete Package — Satin Black",
+            qty: 1,
+            unitPrice: 1400,
+            total: 1400,
+          },
+          {
+            description: "Brightwork Wrap — Satin Gold Accents",
+            qty: 1,
+            unitPrice: 1200,
+            total: 1200,
+          },
+        ]),
+        subtotal: 9800,
+        tax: 857.5,
+        total: 10657.5,
+        status: "PAID",
+        paidAt: daysAgo(3),
+      },
+    }),
+    // ATL-2026-004 — Natasha Kim BMW M8 Full PPF (PAID this month)
+    prisma.invoice.create({
+      data: {
+        jobId: jobs[16].id,
+        customerId: customers[12].id,
+        invoiceNumber: "ATL-2026-004",
+        lineItems: JSON.stringify([
+          { description: "Full PPF — XPEL Ultimate Plus", qty: 1, unitPrice: 6200, total: 6200 },
+          {
+            description: "Ceramic Coat — Ceramic Pro Sport (2 layers)",
+            qty: 1,
+            unitPrice: 1000,
+            total: 1000,
+          },
+        ]),
+        subtotal: 7200,
+        tax: 630,
+        total: 7830,
+        status: "PAID",
+        paidAt: daysAgo(6),
       },
     }),
   ]);
