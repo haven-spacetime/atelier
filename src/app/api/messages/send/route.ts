@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
 
 // Convert any phone format to E.164: "+17147250215"
 function toE164(phone: string): string {
@@ -21,7 +22,11 @@ export async function POST(request: NextRequest) {
   }
 
   const body = await request.json();
-  const { phone, message } = body as { phone: string; message: string };
+  const { phone, message, customerId } = body as {
+    phone: string;
+    message: string;
+    customerId?: string;
+  };
 
   if (!phone || !message?.trim()) {
     return NextResponse.json({ error: "phone and message are required" }, { status: 400 });
@@ -50,9 +55,18 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await res.json();
+
+    // Stamp lastContactedAt on the customer after a successful send
+    if (customerId) {
+      await prisma.customer.update({
+        where: { id: customerId },
+        data: { lastContactedAt: new Date() },
+      });
+    }
+
     return NextResponse.json({ success: true, data });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    return NextResponse.json({ error: `Failed to reach BlueBubbles: ${message}` }, { status: 502 });
+    const errMsg = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: `Failed to reach BlueBubbles: ${errMsg}` }, { status: 502 });
   }
 }

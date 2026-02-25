@@ -126,6 +126,19 @@ async function main() {
         lastContactedAt: daysAgo(1),
       },
     }),
+    // Cindy Nguyen
+    prisma.customer.create({
+      data: {
+        name: "Cindy Nguyen",
+        email: "cindy.nguyen@icloud.com",
+        phone: "+1(714)855-7828",
+        address: "4200 MacArthur Blvd, Newport Beach, CA 92660",
+        notes:
+          "Referred by a mutual friend. Brand new Cayenne GTS straight from the dealer — wants full PPF before putting any miles on it. Waiting on quote approval.",
+        tags: JSON.stringify(["referral", "new"]),
+        lastContactedAt: daysAgo(7),
+      },
+    }),
   ]);
 
   console.log(`Created ${customers.length} customers.`);
@@ -279,6 +292,18 @@ async function main() {
         vin: "ZPBUA1ZL2PLA12345",
         notes:
           "Full color change wrap. White base going to a custom color. Handle with care — very personal vehicle.",
+      },
+    }),
+    // Cindy Nguyen
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[9].id,
+        year: 2024,
+        make: "Porsche",
+        model: "Cayenne GTS",
+        color: "Carmine Red",
+        vin: "WP1AF2AY4RDA00100",
+        notes: "Brand new from dealer. 0 miles. Full body PPF before first drive.",
       },
     }),
   ]);
@@ -486,7 +511,24 @@ async function main() {
         photos: JSON.stringify([]),
       },
     }),
-    // Job 11 — Haven Vu Urus: Full Color Change Wrap — IN_PROGRESS
+    // Job 11 — Cindy Nguyen Cayenne GTS: Full PPF — QUOTED
+    prisma.job.create({
+      data: {
+        customerId: customers[9].id,
+        vehicleId: vehicles[13].id,
+        type: "PPF",
+        status: "QUOTED",
+        title: "Full Stealth PPF — Cayenne GTS",
+        description:
+          "Full body XPEL Stealth PPF. Brand new vehicle, 0 miles. Customer wants matte finish to contrast the Carmine Red paint. Quote sent, awaiting approval.",
+        estimatedHours: 28,
+        materialNotes:
+          "XPEL Stealth full kit — 70 ft for Cayenne GTS. Extra material for rear bumper and sill plates.",
+        quotedPrice: 5800,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Job 12 — Haven Vu Urus: Full Color Change Wrap — IN_PROGRESS
     prisma.job.create({
       data: {
         customerId: customers[8].id,

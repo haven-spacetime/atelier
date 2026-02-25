@@ -114,7 +114,24 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               <Mail size={13} />
               Email
             </a>
-            {customer.phone && <SendMessageButton name={customer.name} phone={customer.phone} />}
+            {customer.phone && (
+              <SendMessageButton
+                customerId={customer.id}
+                name={customer.name}
+                phone={customer.phone}
+                jobs={customer.jobs.map((j) => ({
+                  id: j.id,
+                  title: j.title,
+                  type: j.type,
+                  status: j.status,
+                  vehicle: {
+                    year: j.vehicle.year,
+                    make: j.vehicle.make,
+                    model: j.vehicle.model,
+                  },
+                }))}
+              />
+            )}
           </div>
         </div>
 
