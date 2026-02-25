@@ -38,14 +38,7 @@ type SortKey = "name" | "lastContactedAt" | "jobs" | "vehicles";
 type SortDir = "asc" | "desc";
 type ViewMode = "table" | "grid";
 
-type ColumnKey =
-  | "phone"
-  | "email"
-  | "tags"
-  | "vehicles"
-  | "jobs"
-  | "lastContactedAt"
-  | "createdAt";
+type ColumnKey = "phone" | "email" | "tags" | "vehicles" | "jobs" | "lastContactedAt" | "createdAt";
 
 interface ColumnDef {
   key: ColumnKey;
@@ -81,6 +74,51 @@ interface Props {
   customers: CustomerWithMeta[];
 }
 
+// ─── Table header sub-components (defined outside to satisfy hooks/static-components) ──
+
+function ThSortable({
+  label,
+  col,
+  sortKey,
+  sortDir,
+  onSort,
+}: {
+  label: string;
+  col: SortKey;
+  sortKey: SortKey;
+  sortDir: SortDir;
+  onSort: (col: SortKey) => void;
+}) {
+  const active = sortKey === col;
+  return (
+    <th
+      className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#888888] cursor-pointer select-none whitespace-nowrap hover:text-[#C4A265] transition-colors duration-150"
+      onClick={() => onSort(col)}
+    >
+      <span className="inline-flex items-center gap-1">
+        {label}
+        {active ? (
+          sortDir === "asc" ? (
+            <ChevronUp size={12} className="text-[#C4A265]" />
+          ) : (
+            <ChevronDown size={12} className="text-[#C4A265]" />
+          )
+        ) : (
+          <ChevronDown size={12} className="text-[#444]" />
+        )}
+      </span>
+    </th>
+  );
+}
+
+function ThStatic({ label }: { label: string }) {
+  return (
+    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#888888] whitespace-nowrap">
+      {label}
+    </th>
+  );
+}
+
 export default function CustomerList({ customers }: Props) {
   const router = useRouter();
   const [view, setView] = useState<ViewMode>("table");
@@ -90,9 +128,10 @@ export default function CustomerList({ customers }: Props) {
   const [columnsOpen, setColumnsOpen] = useState(false);
   const [visibleCols, setVisibleCols] = useState<Record<ColumnKey, boolean>>(
     () =>
-      Object.fromEntries(
-        COLUMNS.map((c) => [c.key, c.defaultVisible])
-      ) as Record<ColumnKey, boolean>
+      Object.fromEntries(COLUMNS.map((c) => [c.key, c.defaultVisible])) as Record<
+        ColumnKey,
+        boolean
+      >,
   );
 
   const columnsRef = useRef<HTMLDivElement>(null);
@@ -100,10 +139,7 @@ export default function CustomerList({ customers }: Props) {
   // Close columns dropdown on outside click
   useEffect(() => {
     function handle(e: MouseEvent) {
-      if (
-        columnsRef.current &&
-        !columnsRef.current.contains(e.target as Node)
-      ) {
+      if (columnsRef.current && !columnsRef.current.contains(e.target as Node)) {
         setColumnsOpen(false);
       }
     }
@@ -119,7 +155,7 @@ export default function CustomerList({ customers }: Props) {
       (c) =>
         c.name.toLowerCase().includes(q) ||
         c.email.toLowerCase().includes(q) ||
-        (c.phone ?? "").toLowerCase().includes(q)
+        (c.phone ?? "").toLowerCase().includes(q),
     );
   }, [customers, search]);
 
@@ -157,33 +193,13 @@ export default function CustomerList({ customers }: Props) {
     setVisibleCols((prev) => ({ ...prev, [key]: !prev[key] }));
   }
 
-  function SortIcon({ col }: { col: SortKey }) {
-    if (sortKey !== col)
-      return <ChevronDown size={12} className="ml-1 text-[#444]" />;
-    return sortDir === "asc" ? (
-      <ChevronUp size={12} className="ml-1 text-[#C4A265]" />
-    ) : (
-      <ChevronDown size={12} className="ml-1 text-[#C4A265]" />
-    );
-  }
-
-  const sortableCols: Partial<Record<ColumnKey | "name", SortKey>> = {
-    name: "name",
-    lastContactedAt: "lastContactedAt",
-    jobs: "jobs",
-    vehicles: "vehicles",
-  };
-
   // ─── TOOLBAR ────────────────────────────────────────────────────────────────
 
   const toolbar = (
     <div className="mb-6 flex flex-wrap items-center gap-3">
       {/* Search */}
       <div className="relative flex-1 min-w-[200px] max-w-xs">
-        <Search
-          size={14}
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888]"
-        />
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888]" />
         <input
           type="text"
           placeholder="Search customers…"
@@ -231,9 +247,7 @@ export default function CustomerList({ customers }: Props) {
                         : "border-[#444444] bg-transparent"
                     }`}
                   >
-                    {visibleCols[col.key] && (
-                      <Check size={10} className="text-[#0A0A0A]" />
-                    )}
+                    {visibleCols[col.key] && <Check size={10} className="text-[#0A0A0A]" />}
                   </div>
                   {col.label}
                 </button>
@@ -249,9 +263,7 @@ export default function CustomerList({ customers }: Props) {
           onClick={() => setView("table")}
           title="Table view"
           className={`flex h-9 w-9 items-center justify-center transition-colors duration-200 ${
-            view === "table"
-              ? "bg-[#1A1A1A] text-[#C4A265]"
-              : "text-[#888888] hover:text-[#F5F5F5]"
+            view === "table" ? "bg-[#1A1A1A] text-[#C4A265]" : "text-[#888888] hover:text-[#F5F5F5]"
           }`}
         >
           <List size={16} />
@@ -260,9 +272,7 @@ export default function CustomerList({ customers }: Props) {
           onClick={() => setView("grid")}
           title="Grid view"
           className={`flex h-9 w-9 items-center justify-center transition-colors duration-200 ${
-            view === "grid"
-              ? "bg-[#1A1A1A] text-[#C4A265]"
-              : "text-[#888888] hover:text-[#F5F5F5]"
+            view === "grid" ? "bg-[#1A1A1A] text-[#C4A265]" : "text-[#888888] hover:text-[#F5F5F5]"
           }`}
         >
           <LayoutGrid size={16} />
@@ -290,12 +300,8 @@ export default function CustomerList({ customers }: Props) {
           <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#141414] border border-[#2A2A2A]">
             <Users size={28} className="text-[#888888]" />
           </div>
-          <h2 className="text-lg font-medium text-[#F5F5F5]">
-            No customers yet
-          </h2>
-          <p className="mt-1 text-sm text-[#888888]">
-            Add your first customer to get started.
-          </p>
+          <h2 className="text-lg font-medium text-[#F5F5F5]">No customers yet</h2>
+          <p className="mt-1 text-sm text-[#888888]">Add your first customer to get started.</p>
         </div>
       </>
     );
@@ -306,9 +312,7 @@ export default function CustomerList({ customers }: Props) {
       <>
         {toolbar}
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <p className="text-sm text-[#888888]">
-            No customers match &ldquo;{search}&rdquo;
-          </p>
+          <p className="text-sm text-[#888888]">No customers match &ldquo;{search}&rdquo;</p>
         </div>
       </>
     );
@@ -329,9 +333,7 @@ export default function CustomerList({ customers }: Props) {
                 href={`/customers/${customer.id}`}
                 className="block rounded-lg border border-[#2A2A2A] bg-[#141414] p-5 transition-colors duration-200 hover:border-[#C4A265]"
               >
-                <h3 className="text-lg font-medium text-[#F5F5F5]">
-                  {customer.name}
-                </h3>
+                <h3 className="text-lg font-medium text-[#F5F5F5]">{customer.name}</h3>
                 <div className="mt-2 space-y-1">
                   {customer.phone && (
                     <div className="flex items-center gap-2 text-sm text-[#888888]">
@@ -384,34 +386,6 @@ export default function CustomerList({ customers }: Props) {
 
   // ─── TABLE VIEW ──────────────────────────────────────────────────────────────
 
-  function ThSortable({
-    label,
-    col,
-  }: {
-    label: string;
-    col: SortKey;
-  }) {
-    return (
-      <th
-        className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#888888] cursor-pointer select-none whitespace-nowrap hover:text-[#C4A265] transition-colors duration-150"
-        onClick={() => handleSort(col)}
-      >
-        <span className="inline-flex items-center">
-          {label}
-          <SortIcon col={col} />
-        </span>
-      </th>
-    );
-  }
-
-  function ThStatic({ label }: { label: string }) {
-    return (
-      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#888888] whitespace-nowrap">
-        {label}
-      </th>
-    );
-  }
-
   return (
     <>
       {toolbar}
@@ -421,25 +395,43 @@ export default function CustomerList({ customers }: Props) {
             <thead className="bg-[#1A1A1A]">
               <tr>
                 {/* Name — always visible, sortable */}
-                <th
-                  className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-[#888888] cursor-pointer select-none whitespace-nowrap hover:text-[#C4A265] transition-colors duration-150"
-                  onClick={() => handleSort("name")}
-                >
-                  <span className="inline-flex items-center">
-                    Name
-                    <SortIcon col="name" />
-                  </span>
-                </th>
+                <ThSortable
+                  label="Name"
+                  col="name"
+                  sortKey={sortKey}
+                  sortDir={sortDir}
+                  onSort={handleSort}
+                />
 
                 {visibleCols.phone && <ThStatic label="Phone" />}
                 {visibleCols.email && <ThStatic label="Email" />}
                 {visibleCols.tags && <ThStatic label="Tags" />}
                 {visibleCols.vehicles && (
-                  <ThSortable label="Vehicles" col="vehicles" />
+                  <ThSortable
+                    label="Vehicles"
+                    col="vehicles"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                 )}
-                {visibleCols.jobs && <ThSortable label="Jobs" col="jobs" />}
+                {visibleCols.jobs && (
+                  <ThSortable
+                    label="Jobs"
+                    col="jobs"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
+                )}
                 {visibleCols.lastContactedAt && (
-                  <ThSortable label="Last Contacted" col="lastContactedAt" />
+                  <ThSortable
+                    label="Last Contacted"
+                    col="lastContactedAt"
+                    sortKey={sortKey}
+                    sortDir={sortDir}
+                    onSort={handleSort}
+                  />
                 )}
                 {visibleCols.createdAt && <ThStatic label="Customer Since" />}
               </tr>
@@ -471,9 +463,7 @@ export default function CustomerList({ customers }: Props) {
                     {/* Phone */}
                     {visibleCols.phone && (
                       <td className="px-4 py-3 text-sm text-[#888888] whitespace-nowrap">
-                        {customer.phone ?? (
-                          <span className="text-[#444444]">—</span>
-                        )}
+                        {customer.phone ?? <span className="text-[#444444]">—</span>}
                       </td>
                     )}
 

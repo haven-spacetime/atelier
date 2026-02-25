@@ -30,11 +30,11 @@ export default async function CustomersPage() {
       tags: c.tags,
       // lastContactedAt may not exist yet — handle gracefully
       lastContactedAt:
-        (c as any).lastContactedAt instanceof Date
-          ? ((c as any).lastContactedAt as Date).toISOString()
-          : typeof (c as any).lastContactedAt === "string"
-          ? (c as any).lastContactedAt
-          : null,
+        c.lastContactedAt instanceof Date
+          ? c.lastContactedAt.toISOString()
+          : typeof c.lastContactedAt === "string"
+            ? c.lastContactedAt
+            : null,
       createdAt: c.createdAt.toISOString(),
       _count: {
         vehicles: c._count.vehicles,

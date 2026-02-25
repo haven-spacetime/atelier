@@ -16,10 +16,7 @@ export default function Header({ title }: HeaderProps) {
       <div className="flex items-center gap-4">
         {/* Search */}
         <div className="relative">
-          <Search
-            size={16}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888]"
-          />
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#888888]" />
           <input
             type="text"
             placeholder="Search..."
@@ -35,9 +32,15 @@ export default function Header({ title }: HeaderProps) {
           <Bell size={18} />
         </button>
 
-        {/* User avatar */}
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#C4A265] text-xs font-semibold text-[#0A0A0A]">
-          BV
+        {/* User chip */}
+        <div className="flex items-center gap-2.5 rounded-lg border border-[#2A2A2A] bg-[#141414] px-3 py-1.5 cursor-pointer hover:border-[#C4A265] transition-colors duration-200">
+          <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#C4A265] text-[10px] font-bold text-[#0A0A0A]">
+            BN
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-medium text-[#F5F5F5] leading-tight">Brandon Nguyen</span>
+            <span className="text-[10px] text-[#C4A265] leading-tight">Admin</span>
+          </div>
         </div>
       </div>
     </header>

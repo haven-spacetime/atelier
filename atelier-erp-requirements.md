@@ -12,35 +12,37 @@
 Brandon's brand is ultra-luxury minimalism. The ERP must feel like it belongs in his world — not a generic blue SaaS dashboard.
 
 ### Typography
+
 - **Display / Headings**: `"DM Serif Display"` (Google Fonts) — closest match to Atelier's serif wordmark
 - **Body / UI**: `"DM Sans"` (Google Fonts) — clean geometric sans that pairs perfectly
 - **Monospace (data/IDs)**: `"JetBrains Mono"` (Google Fonts)
 - **All headings**: Lowercase or sentence case (never ALL CAPS except short labels like "VIN" or "PPF")
 
 ### Color Palette
+
 ```css
 :root {
   /* Core */
-  --bg-primary: #0A0A0A;         /* Near-black background */
-  --bg-secondary: #141414;       /* Card/panel background */
-  --bg-tertiary: #1E1E1E;        /* Hover states, inputs */
-  --bg-elevated: #242424;        /* Modals, dropdowns */
+  --bg-primary: #0a0a0a; /* Near-black background */
+  --bg-secondary: #141414; /* Card/panel background */
+  --bg-tertiary: #1e1e1e; /* Hover states, inputs */
+  --bg-elevated: #242424; /* Modals, dropdowns */
 
   /* Text */
-  --text-primary: #F5F5F0;       /* Warm off-white */
-  --text-secondary: #8A8A80;     /* Muted labels */
-  --text-tertiary: #5A5A55;      /* Disabled, hints */
+  --text-primary: #f5f5f0; /* Warm off-white */
+  --text-secondary: #8a8a80; /* Muted labels */
+  --text-tertiary: #5a5a55; /* Disabled, hints */
 
   /* Accent — Warm gold (luxury cue) */
-  --accent: #C9A96E;             /* Primary accent — muted gold */
-  --accent-hover: #D4B87D;       /* Hover state */
+  --accent: #c9a96e; /* Primary accent — muted gold */
+  --accent-hover: #d4b87d; /* Hover state */
   --accent-muted: rgba(201, 169, 110, 0.12); /* Subtle backgrounds */
 
   /* Status */
-  --status-active: #4ADE80;      /* Green — in progress */
-  --status-waiting: #FACC15;     /* Amber — awaiting approval */
-  --status-complete: #C9A96E;    /* Gold — done */
-  --status-urgent: #F87171;      /* Red — overdue/blocked */
+  --status-active: #4ade80; /* Green — in progress */
+  --status-waiting: #facc15; /* Amber — awaiting approval */
+  --status-complete: #c9a96e; /* Gold — done */
+  --status-urgent: #f87171; /* Red — overdue/blocked */
 
   /* Borders */
   --border: rgba(255, 255, 255, 0.06);
@@ -49,6 +51,7 @@ Brandon's brand is ultra-luxury minimalism. The ERP must feel like it belongs in
 ```
 
 ### Design Rules
+
 - **Dark mode only** (luxury feel, matches automotive photography)
 - **No rounded corners > 8px** — sharp, architectural feel (use `rounded-lg` max)
 - **Generous whitespace** — minimum 24px padding on cards, 16px gaps in grids
@@ -60,6 +63,7 @@ Brandon's brand is ultra-luxury minimalism. The ERP must feel like it belongs in
 - **No gradients** except very subtle ones on CTAs
 
 ### Logo
+
 - Use text "atelier" in DM Serif Display, lowercase, tracking -0.02em
 - Below it, smaller: "motors" in DM Sans, uppercase, tracking 0.2em, text-secondary color
 - This goes top-left of sidebar
@@ -69,6 +73,7 @@ Brandon's brand is ultra-luxury minimalism. The ERP must feel like it belongs in
 ## 2. APP STRUCTURE
 
 ### Layout
+
 ```
 ┌─────────┬──────────────────────────────────┐
 │         │  Header: Page title + search +   │
@@ -86,6 +91,7 @@ Brandon's brand is ultra-luxury minimalism. The ERP must feel like it belongs in
 ```
 
 ### Navigation (sidebar)
+
 1. **Jobs** (Kanban board) — DEFAULT VIEW, replace Trello
 2. **Calendar** (appointment scheduling)
 3. **Estimates & Invoices**
@@ -113,6 +119,7 @@ This is the hero screen. Must immediately feel better than Trello.
 | Complete | `--status-complete` | Job done, ready for pickup |
 
 **Job Card contents**:
+
 ```
 ┌─────────────────────────────┐
 │ [Vehicle Thumbnail]  40x40  │
@@ -127,15 +134,18 @@ This is the hero screen. Must immediately feel better than Trello.
 │ Due: Feb 28                 │  ← due date
 └─────────────────────────────┘
 ```
+
 (Use Lucide icons, not emoji — the above is just for spec clarity)
 
 **Interactions**:
+
 - Drag cards between columns (use `@dnd-kit/core` or `react-beautiful-dnd`)
 - Click card → slide-out detail panel from right (not a modal — keeps context)
 - Filter bar at top: by technician, by service type, by date range
 - "+ New Job" button (gold accent) opens a form
 
 **Job Detail Panel** (slide from right, ~480px wide):
+
 - Vehicle info with photo
 - Customer contact info (phone, click-to-call)
 - Service breakdown (line items with prices)
@@ -149,6 +159,7 @@ This is the hero screen. Must immediately feel better than Trello.
 **Layout**: Week view by default, with month toggle
 
 **Features**:
+
 - Color-coded blocks by service type:
   - PPF (Paint Protection Film) → Gold/amber
   - Wrap → Blue-grey
@@ -165,20 +176,21 @@ This is the hero screen. Must immediately feel better than Trello.
 ### 3C. ESTIMATES & INVOICES (Priority 3)
 
 **Estimate Builder**:
+
 - Select customer (search/autocomplete)
 - Select vehicle (from customer's vehicles, or add new)
 - Add line items from service catalog:
 
-| Service | Base Price |
-|---------|-----------|
-| Full Body PPF (XPEL Ultimate Plus) | $5,500 - $8,000 |
-| Partial PPF (Front End) | $1,800 - $2,500 |
-| Full Color Change Wrap | $3,500 - $6,000 |
-| Chrome Delete | $800 - $1,500 |
+| Service                                  | Base Price      |
+| ---------------------------------------- | --------------- |
+| Full Body PPF (XPEL Ultimate Plus)       | $5,500 - $8,000 |
+| Partial PPF (Front End)                  | $1,800 - $2,500 |
+| Full Color Change Wrap                   | $3,500 - $6,000 |
+| Chrome Delete                            | $800 - $1,500   |
 | Ceramic Coating (Gtechniq Crystal Serum) | $1,200 - $2,000 |
-| Full Detail | $300 - $500 |
-| Window Tint (Full Vehicle) | $400 - $600 |
-| Wheel Powder Coating (set of 4) | $1,200 - $2,000 |
+| Full Detail                              | $300 - $500     |
+| Window Tint (Full Vehicle)               | $400 - $600     |
+| Wheel Powder Coating (set of 4)          | $1,200 - $2,000 |
 
 - Custom line items (free text + price)
 - Tax toggle (CA sales tax 7.75%)
@@ -191,6 +203,7 @@ This is the hero screen. Must immediately feel better than Trello.
 **Invoice view**: Same as estimate but with "INVOICE" header, payment status badge, and "Mark Paid" action
 
 **List view**: Table of all estimates/invoices with:
+
 - Status filter (Draft, Sent, Approved, Paid, Overdue)
 - Search by customer or vehicle
 - Sort by date, amount
@@ -198,6 +211,7 @@ This is the hero screen. Must immediately feel better than Trello.
 ### 3D. CUSTOMERS CRM (Priority 4 — but still important)
 
 **List View**: Table with columns:
+
 - Name
 - Phone
 - Email
@@ -207,6 +221,7 @@ This is the hero screen. Must immediately feel better than Trello.
 - Tags (VIP, Dealer, Repeat, New)
 
 **Customer Detail Page**:
+
 - Contact info card
 - Vehicles owned (linked list)
 - Job history (timeline of all work)
@@ -217,10 +232,12 @@ This is the hero screen. Must immediately feel better than Trello.
 ### 3E. VEHICLES
 
 **List View**: Card grid (not table — show vehicle photos)
+
 - Each card: Photo, Year/Make/Model, Owner name, services count
 - Search by VIN, make, model, or owner
 
 **Vehicle Detail**:
+
 - Photo gallery
 - VIN, Color, Mileage
 - Owner (linked to customer)
@@ -234,37 +251,159 @@ This is the hero screen. Must immediately feel better than Trello.
 Pre-seed the app with realistic luxury auto data. This makes the demo feel REAL.
 
 ### Customers (8-10)
+
 ```json
 [
-  { "name": "Marcus Thompson", "phone": "(949) 555-0142", "email": "marcus@outlook.com", "tags": ["VIP", "Repeat"], "totalSpent": 47500 },
-  { "name": "David Chen", "phone": "(714) 555-0198", "email": "dchen@gmail.com", "tags": ["VIP"], "totalSpent": 32000 },
-  { "name": "Sarah Al-Rashidi", "phone": "(949) 555-0267", "email": "sarah.r@icloud.com", "tags": ["New"], "totalSpent": 6500 },
-  { "name": "James Moretti", "phone": "(310) 555-0334", "email": "jmoretti@yahoo.com", "tags": ["Dealer"], "totalSpent": 125000 },
-  { "name": "Ryan Okafor", "phone": "(949) 555-0411", "email": "ryan.o@gmail.com", "tags": ["Repeat"], "totalSpent": 18500 },
-  { "name": "Kevin Park", "phone": "(562) 555-0178", "email": "kpark@gmail.com", "tags": ["VIP", "Repeat"], "totalSpent": 55000 },
-  { "name": "Nicole Reyes", "phone": "(714) 555-0523", "email": "nicole.r@outlook.com", "tags": ["New"], "totalSpent": 3800 },
-  { "name": "Anthony DiNapoli", "phone": "(949) 555-0691", "email": "adinapoli@icloud.com", "tags": ["Repeat"], "totalSpent": 22000 }
+  {
+    "name": "Marcus Thompson",
+    "phone": "(949) 555-0142",
+    "email": "marcus@outlook.com",
+    "tags": ["VIP", "Repeat"],
+    "totalSpent": 47500
+  },
+  {
+    "name": "David Chen",
+    "phone": "(714) 555-0198",
+    "email": "dchen@gmail.com",
+    "tags": ["VIP"],
+    "totalSpent": 32000
+  },
+  {
+    "name": "Sarah Al-Rashidi",
+    "phone": "(949) 555-0267",
+    "email": "sarah.r@icloud.com",
+    "tags": ["New"],
+    "totalSpent": 6500
+  },
+  {
+    "name": "James Moretti",
+    "phone": "(310) 555-0334",
+    "email": "jmoretti@yahoo.com",
+    "tags": ["Dealer"],
+    "totalSpent": 125000
+  },
+  {
+    "name": "Ryan Okafor",
+    "phone": "(949) 555-0411",
+    "email": "ryan.o@gmail.com",
+    "tags": ["Repeat"],
+    "totalSpent": 18500
+  },
+  {
+    "name": "Kevin Park",
+    "phone": "(562) 555-0178",
+    "email": "kpark@gmail.com",
+    "tags": ["VIP", "Repeat"],
+    "totalSpent": 55000
+  },
+  {
+    "name": "Nicole Reyes",
+    "phone": "(714) 555-0523",
+    "email": "nicole.r@outlook.com",
+    "tags": ["New"],
+    "totalSpent": 3800
+  },
+  {
+    "name": "Anthony DiNapoli",
+    "phone": "(949) 555-0691",
+    "email": "adinapoli@icloud.com",
+    "tags": ["Repeat"],
+    "totalSpent": 22000
+  }
 ]
 ```
 
 ### Vehicles (10-12)
+
 ```json
 [
-  { "year": 2024, "make": "Lamborghini", "model": "Huracán Tecnica", "color": "Bianco Sideris", "vin": "ZHWUF4ZF4RLA12345", "owner": "Marcus Thompson" },
-  { "year": 2023, "make": "Porsche", "model": "911 GT3 RS", "color": "Python Green", "vin": "WP0AF2A93PS123456", "owner": "David Chen" },
-  { "year": 2024, "make": "McLaren", "model": "750S", "color": "Silica White", "vin": "SBM14DCA1RW123456", "owner": "Sarah Al-Rashidi" },
-  { "year": 2023, "make": "Ferrari", "model": "296 GTB", "color": "Rosso Corsa", "vin": "ZFF96BHA4P0123456", "owner": "James Moretti" },
-  { "year": 2024, "make": "Mercedes-AMG", "model": "GT 63 S", "color": "Obsidian Black", "vin": "W1K6J7GB4RA123456", "owner": "Kevin Park" },
-  { "year": 2023, "make": "BMW", "model": "M4 Competition", "color": "Isle of Man Green", "vin": "WBS43AZ09P1234567", "owner": "Ryan Okafor" },
-  { "year": 2024, "make": "Rolls-Royce", "model": "Spectre", "color": "Black Diamond", "vin": "SCA666S04RU123456", "owner": "Kevin Park" },
-  { "year": 2023, "make": "Porsche", "model": "Cayenne Turbo GT", "color": "Arctic Grey", "vin": "WP1BF2AY5PD123456", "owner": "Anthony DiNapoli" },
-  { "year": 2024, "make": "Lamborghini", "model": "Urus Performante", "color": "Nero Noctis", "vin": "ZPBUA1ZL4RLA12345", "owner": "James Moretti" },
-  { "year": 2023, "make": "Audi", "model": "RS e-tron GT", "color": "Daytona Grey", "vin": "WUAASAF67P1234567", "owner": "Nicole Reyes" }
+  {
+    "year": 2024,
+    "make": "Lamborghini",
+    "model": "Huracán Tecnica",
+    "color": "Bianco Sideris",
+    "vin": "ZHWUF4ZF4RLA12345",
+    "owner": "Marcus Thompson"
+  },
+  {
+    "year": 2023,
+    "make": "Porsche",
+    "model": "911 GT3 RS",
+    "color": "Python Green",
+    "vin": "WP0AF2A93PS123456",
+    "owner": "David Chen"
+  },
+  {
+    "year": 2024,
+    "make": "McLaren",
+    "model": "750S",
+    "color": "Silica White",
+    "vin": "SBM14DCA1RW123456",
+    "owner": "Sarah Al-Rashidi"
+  },
+  {
+    "year": 2023,
+    "make": "Ferrari",
+    "model": "296 GTB",
+    "color": "Rosso Corsa",
+    "vin": "ZFF96BHA4P0123456",
+    "owner": "James Moretti"
+  },
+  {
+    "year": 2024,
+    "make": "Mercedes-AMG",
+    "model": "GT 63 S",
+    "color": "Obsidian Black",
+    "vin": "W1K6J7GB4RA123456",
+    "owner": "Kevin Park"
+  },
+  {
+    "year": 2023,
+    "make": "BMW",
+    "model": "M4 Competition",
+    "color": "Isle of Man Green",
+    "vin": "WBS43AZ09P1234567",
+    "owner": "Ryan Okafor"
+  },
+  {
+    "year": 2024,
+    "make": "Rolls-Royce",
+    "model": "Spectre",
+    "color": "Black Diamond",
+    "vin": "SCA666S04RU123456",
+    "owner": "Kevin Park"
+  },
+  {
+    "year": 2023,
+    "make": "Porsche",
+    "model": "Cayenne Turbo GT",
+    "color": "Arctic Grey",
+    "vin": "WP1BF2AY5PD123456",
+    "owner": "Anthony DiNapoli"
+  },
+  {
+    "year": 2024,
+    "make": "Lamborghini",
+    "model": "Urus Performante",
+    "color": "Nero Noctis",
+    "vin": "ZPBUA1ZL4RLA12345",
+    "owner": "James Moretti"
+  },
+  {
+    "year": 2023,
+    "make": "Audi",
+    "model": "RS e-tron GT",
+    "color": "Daytona Grey",
+    "vin": "WUAASAF67P1234567",
+    "owner": "Nicole Reyes"
+  }
 ]
 ```
 
 ### Jobs (8-10 across Kanban columns)
+
 Include a mix:
+
 - 2 in "Inquiry" (new leads)
 - 1 in "Scheduled"
 - 3 in "In Progress" (shop is busy — looks great in demo)
@@ -274,6 +413,7 @@ Include a mix:
 Each job should have realistic services and prices matching the service catalog above.
 
 ### Calendar
+
 Pre-populate the current week with the "Scheduled" and "In Progress" jobs assigned to bays and time slots.
 
 ---
@@ -281,6 +421,7 @@ Pre-populate the current week with the "Scheduled" and "In Progress" jobs assign
 ## 5. TECHNICAL NOTES FOR CLAUDE CODE
 
 ### Project Setup
+
 ```bash
 npx create-next-app@latest atelier-erp --typescript --tailwind --eslint --app --src-dir --import-alias "@/*"
 cd atelier-erp
@@ -288,6 +429,7 @@ npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities lucide-react date
 ```
 
 ### Key Architecture Decisions
+
 - **State management**: React Context + useReducer (no Redux — overkill for demo)
 - **Data**: JSON files in `/src/data/` imported directly. No API routes needed.
 - **Routing**: App Router — `/jobs`, `/calendar`, `/estimates`, `/customers`, `/vehicles`
@@ -298,6 +440,7 @@ npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities lucide-react date
 - **No database**: All state in-memory with React Context, pre-seeded from mock data
 
 ### File Structure
+
 ```
 src/
 ├── app/
@@ -358,13 +501,14 @@ src/
 ```
 
 ### TypeScript Types
+
 ```typescript
 interface Customer {
   id: string;
   name: string;
   phone: string;
   email: string;
-  tags: ('VIP' | 'Repeat' | 'New' | 'Dealer')[];
+  tags: ("VIP" | "Repeat" | "New" | "Dealer")[];
   totalSpent: number;
   lastVisit: string; // ISO date
   notes: string;
@@ -383,7 +527,7 @@ interface Vehicle {
   services: string[]; // IDs of past jobs
 }
 
-type JobStatus = 'inquiry' | 'scheduled' | 'in_progress' | 'awaiting_approval' | 'complete';
+type JobStatus = "inquiry" | "scheduled" | "in_progress" | "awaiting_approval" | "complete";
 
 interface Job {
   id: string;
@@ -424,7 +568,7 @@ interface Estimate {
   customerId: string;
   vehicleId: string;
   jobId?: string;
-  status: 'draft' | 'sent' | 'approved' | 'declined' | 'invoiced' | 'paid' | 'overdue';
+  status: "draft" | "sent" | "approved" | "declined" | "invoiced" | "paid" | "overdue";
   lineItems: JobLineItem[];
   subtotal: number;
   tax: number;
@@ -440,7 +584,7 @@ interface Estimate {
 interface Service {
   id: string;
   name: string;
-  category: 'ppf' | 'wrap' | 'ceramic' | 'detail' | 'tint' | 'wheels' | 'other';
+  category: "ppf" | "wrap" | "ceramic" | "detail" | "tint" | "wheels" | "other";
   priceMin: number;
   priceMax: number;
   defaultPrice: number;

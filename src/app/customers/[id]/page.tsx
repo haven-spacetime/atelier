@@ -16,37 +16,8 @@ import {
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
-
-// ── Status & type configs (mirrors jobs page) ──────────────────────
-
-const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
-  INQUIRY: { bg: "bg-slate-500/10", text: "text-slate-400", dot: "bg-slate-400" },
-  QUOTED: { bg: "bg-blue-500/10", text: "text-blue-400", dot: "bg-blue-400" },
-  SCHEDULED: { bg: "bg-violet-500/10", text: "text-violet-400", dot: "bg-violet-400" },
-  IN_PROGRESS: { bg: "bg-amber-500/10", text: "text-amber-400", dot: "bg-amber-400" },
-  QC: { bg: "bg-orange-500/10", text: "text-orange-400", dot: "bg-orange-400" },
-  COMPLETE: { bg: "bg-emerald-500/10", text: "text-emerald-400", dot: "bg-emerald-400" },
-  INVOICED: { bg: "bg-[#C4A265]/10", text: "text-[#C4A265]", dot: "bg-[#C4A265]" },
-};
-
-const STATUS_LABELS: Record<string, string> = {
-  INQUIRY: "Inquiry",
-  QUOTED: "Quoted",
-  SCHEDULED: "Scheduled",
-  IN_PROGRESS: "In Progress",
-  QC: "QC",
-  COMPLETE: "Complete",
-  INVOICED: "Invoiced",
-};
-
-const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  WRAP: { bg: "bg-purple-500/10", text: "text-purple-400" },
-  PPF: { bg: "bg-blue-500/10", text: "text-blue-400" },
-  CERAMIC: { bg: "bg-emerald-500/10", text: "text-emerald-400" },
-  TINT: { bg: "bg-amber-500/10", text: "text-amber-400" },
-  CUSTOM: { bg: "bg-pink-500/10", text: "text-pink-400" },
-  DEALERSHIP: { bg: "bg-cyan-500/10", text: "text-cyan-400" },
-};
+import { JOB_STATUS_COLORS, JOB_STATUS_LABELS, JOB_TYPE_COLORS } from "@/lib/constants";
+import { parseJsonArray } from "@/lib/format";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -80,13 +51,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const tags: string[] = (() => {
-    try {
-      return JSON.parse(customer.tags);
-    } catch {
-      return [];
-    }
-  })();
+  const tags = parseJsonArray(customer.tags);
 
   // ── Computed stats ──────────────────────────────
   const totalSpent = customer.invoices
@@ -94,7 +59,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
     .reduce((sum, inv) => sum + inv.total, 0);
 
   const activeJobs = customer.jobs.filter(
-    (j) => j.status === "IN_PROGRESS" || j.status === "QC"
+    (j) => j.status === "IN_PROGRESS" || j.status === "QC",
   ).length;
 
   const totalJobs = customer.jobs.length;
@@ -177,9 +142,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               <Activity size={13} />
               <span className="text-[10px] uppercase tracking-widest">Active Jobs</span>
             </div>
-            <p className="mt-1.5 text-lg font-semibold text-[#F5F5F5]">
-              {activeJobs}
-            </p>
+            <p className="mt-1.5 text-lg font-semibold text-[#F5F5F5]">{activeJobs}</p>
           </div>
 
           <div className="rounded-lg border border-[#2A2A2A] bg-[#141414] p-4">
@@ -187,9 +150,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               <Briefcase size={13} />
               <span className="text-[10px] uppercase tracking-widest">Total Jobs</span>
             </div>
-            <p className="mt-1.5 text-lg font-semibold text-[#F5F5F5]">
-              {totalJobs}
-            </p>
+            <p className="mt-1.5 text-lg font-semibold text-[#F5F5F5]">{totalJobs}</p>
           </div>
 
           <div className="rounded-lg border border-[#2A2A2A] bg-[#141414] p-4">
@@ -197,9 +158,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               <Car size={13} />
               <span className="text-[10px] uppercase tracking-widest">Vehicles</span>
             </div>
-            <p className="mt-1.5 text-lg font-semibold text-[#F5F5F5]">
-              {vehicleCount}
-            </p>
+            <p className="mt-1.5 text-lg font-semibold text-[#F5F5F5]">{vehicleCount}</p>
           </div>
         </div>
 
@@ -209,18 +168,14 @@ export default async function CustomerDetailPage({ params }: PageProps) {
           <div className="space-y-6 lg:col-span-2">
             {/* Customer Info Card */}
             <div className="rounded-lg border border-[#2A2A2A] bg-[#141414] p-5">
-              <h2 className="mb-4 text-base font-medium text-[#F5F5F5]">
-                Customer Information
-              </h2>
+              <h2 className="mb-4 text-base font-medium text-[#F5F5F5]">Customer Information</h2>
 
               <div className="space-y-3">
                 {/* Email */}
                 <div className="flex items-start gap-2">
                   <Mail size={14} className="mt-0.5 text-[#888888]" />
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-[#888888]">
-                      Email
-                    </p>
+                    <p className="text-xs uppercase tracking-wider text-[#888888]">Email</p>
                     <a
                       href={`mailto:${customer.email}`}
                       className="mt-0.5 text-sm text-[#F5F5F5] transition-colors hover:text-[#C4A265]"
@@ -235,9 +190,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                   <div className="flex items-start gap-2">
                     <Phone size={14} className="mt-0.5 text-[#888888]" />
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-[#888888]">
-                        Phone
-                      </p>
+                      <p className="text-xs uppercase tracking-wider text-[#888888]">Phone</p>
                       <a
                         href={`tel:${customer.phone}`}
                         className="mt-0.5 text-sm text-[#F5F5F5] transition-colors hover:text-[#C4A265]"
@@ -253,12 +206,8 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                   <div className="flex items-start gap-2">
                     <MapPin size={14} className="mt-0.5 text-[#888888]" />
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-[#888888]">
-                        Address
-                      </p>
-                      <p className="mt-0.5 text-sm text-[#F5F5F5]">
-                        {customer.address}
-                      </p>
+                      <p className="text-xs uppercase tracking-wider text-[#888888]">Address</p>
+                      <p className="mt-0.5 text-sm text-[#F5F5F5]">{customer.address}</p>
                     </div>
                   </div>
                 )}
@@ -268,9 +217,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                   <div className="flex items-start gap-2">
                     <StickyNote size={14} className="mt-0.5 text-[#888888]" />
                     <div>
-                      <p className="text-xs uppercase tracking-wider text-[#888888]">
-                        Notes
-                      </p>
+                      <p className="text-xs uppercase tracking-wider text-[#888888]">Notes</p>
                       <p className="mt-0.5 text-sm text-[#F5F5F5] whitespace-pre-wrap">
                         {customer.notes}
                       </p>
@@ -283,12 +230,8 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             {/* Jobs List */}
             <div className="rounded-lg border border-[#2A2A2A] bg-[#141414] p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-base font-medium text-[#F5F5F5]">
-                  Jobs
-                </h2>
-                <span className="text-xs text-[#888888]">
-                  {customer.jobs.length} total
-                </span>
+                <h2 className="text-base font-medium text-[#F5F5F5]">Jobs</h2>
+                <span className="text-xs text-[#888888]">{customer.jobs.length} total</span>
               </div>
 
               {customer.jobs.length === 0 ? (
@@ -306,16 +249,17 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                         <th className="pb-3 pr-4 font-medium">Type</th>
                         <th className="pb-3 pr-4 font-medium">Bay</th>
                         <th className="pb-3 pr-4 font-medium">Status</th>
-                        <th className="pb-3 pr-4 font-medium text-right">
-                          Price
-                        </th>
+                        <th className="pb-3 pr-4 font-medium text-right">Price</th>
                         <th className="pb-3 font-medium text-right">Date</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#2A2A2A]">
                       {customer.jobs.map((job) => {
-                        const sc = STATUS_COLORS[job.status] ?? STATUS_COLORS.INQUIRY;
-                        const tc = TYPE_COLORS[job.type] ?? { bg: "bg-[#1E1E1E]", text: "text-[#888888]" };
+                        const sc = JOB_STATUS_COLORS[job.status] ?? JOB_STATUS_COLORS.INQUIRY;
+                        const tc = JOB_TYPE_COLORS[job.type] ?? {
+                          bg: "bg-[#1E1E1E]",
+                          text: "text-[#888888]",
+                        };
                         return (
                           <tr
                             key={job.id}
@@ -330,8 +274,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                               </Link>
                             </td>
                             <td className="py-3 pr-4 text-[#888888]">
-                              {job.vehicle.year} {job.vehicle.make}{" "}
-                              {job.vehicle.model}
+                              {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
                             </td>
                             <td className="py-3 pr-4">
                               <span
@@ -348,13 +291,11 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                                 className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${sc.bg} ${sc.text}`}
                               >
                                 <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
-                                {STATUS_LABELS[job.status] ?? job.status}
+                                {JOB_STATUS_LABELS[job.status] ?? job.status}
                               </span>
                             </td>
                             <td className="py-3 pr-4 text-right text-[#F5F5F5]">
-                              {job.quotedPrice != null
-                                ? formatCurrency(job.quotedPrice)
-                                : "--"}
+                              {job.quotedPrice != null ? formatCurrency(job.quotedPrice) : "--"}
                             </td>
                             <td className="py-3 text-right text-[#888888]">
                               {formatDate(job.createdAt)}
@@ -374,12 +315,8 @@ export default async function CustomerDetailPage({ params }: PageProps) {
             {/* Vehicles Card — with inline job history */}
             <div className="rounded-lg border border-[#2A2A2A] bg-[#141414] p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-base font-medium text-[#F5F5F5]">
-                  Vehicles
-                </h2>
-                <span className="text-xs text-[#888888]">
-                  {customer.vehicles.length} total
-                </span>
+                <h2 className="text-base font-medium text-[#F5F5F5]">Vehicles</h2>
+                <span className="text-xs text-[#888888]">{customer.vehicles.length} total</span>
               </div>
 
               {customer.vehicles.length === 0 ? (
@@ -402,9 +339,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                         </p>
                         <div className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-[#888888]">
                           {vehicle.color && <span>{vehicle.color}</span>}
-                          {vehicle.vin && (
-                            <span className="font-mono">{vehicle.vin}</span>
-                          )}
+                          {vehicle.vin && <span className="font-mono">{vehicle.vin}</span>}
                         </div>
 
                         {/* Inline jobs for this vehicle */}
@@ -414,7 +349,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                               Job History
                             </p>
                             {vehicleJobs.map((vj) => {
-                              const sc = STATUS_COLORS[vj.status] ?? STATUS_COLORS.INQUIRY;
+                              const sc = JOB_STATUS_COLORS[vj.status] ?? JOB_STATUS_COLORS.INQUIRY;
                               return (
                                 <Link
                                   key={vj.id}
@@ -428,7 +363,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
                                     className={`shrink-0 inline-flex items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium ${sc.bg} ${sc.text}`}
                                   >
                                     <span className={`h-1.5 w-1.5 rounded-full ${sc.dot}`} />
-                                    {STATUS_LABELS[vj.status] ?? vj.status}
+                                    {JOB_STATUS_LABELS[vj.status] ?? vj.status}
                                   </span>
                                 </Link>
                               );

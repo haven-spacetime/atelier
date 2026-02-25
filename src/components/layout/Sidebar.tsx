@@ -44,9 +44,7 @@ export default function Sidebar() {
       {/* Wordmark */}
       <div className="flex h-16 items-center justify-between border-b border-[#2A2A2A] px-4">
         {!collapsed && (
-          <span className="font-display text-2xl tracking-wider text-[#A0A0A0]">
-            atelier
-          </span>
+          <span className="font-display text-2xl tracking-wider text-[#A0A0A0]">atelier</span>
         )}
         <button
           onClick={() => setCollapsed(!collapsed)}
@@ -68,9 +66,7 @@ export default function Sidebar() {
               key={item.href}
               href={item.href}
               className={`group relative flex items-center gap-3 rounded px-3 py-2.5 text-sm font-medium transition-colors duration-200 ${
-                active
-                  ? "text-white"
-                  : "text-[#888888] hover:bg-[#1A1A1A] hover:text-[#F5F5F5]"
+                active ? "text-white" : "text-[#888888] hover:bg-[#1A1A1A] hover:text-[#F5F5F5]"
               }`}
             >
               {/* Active indicator — gold left border */}

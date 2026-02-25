@@ -3,6 +3,7 @@ import { FileText, Plus } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { INVOICE_STATUS_COLORS } from "@/lib/constants";
 
 export default async function InvoicesPage() {
   let invoices: Awaited<ReturnType<typeof prisma.invoice.findMany>> = [];
@@ -18,13 +19,6 @@ export default async function InvoicesPage() {
   } catch {
     // Database may not be seeded yet — render empty state
   }
-
-  const statusColors: Record<string, string> = {
-    DRAFT: "bg-[#1E1E1E] text-[#888888] border-[#2A2A2A]",
-    SENT: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    PAID: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-    OVERDUE: "bg-red-500/10 text-red-400 border-red-500/20",
-  };
 
   return (
     <>
@@ -50,9 +44,7 @@ export default async function InvoicesPage() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#141414] border border-[#2A2A2A]">
               <FileText size={28} className="text-[#888888]" />
             </div>
-            <h2 className="text-lg font-medium text-[#F5F5F5]">
-              No invoices yet
-            </h2>
+            <h2 className="text-lg font-medium text-[#F5F5F5]">No invoices yet</h2>
             <p className="mt-1 text-sm text-[#888888]">
               Create your first invoice to start tracking payments.
             </p>
@@ -86,12 +78,16 @@ export default async function InvoicesPage() {
 
                     {/* Customer */}
                     <td className="px-4 py-3 text-[#888888]">
-                      {(invoice as any).customer?.name ?? "\u2014"}
+                      {("customer" in invoice &&
+                        ((invoice.customer as Record<string, unknown>)?.name as string)) ||
+                        "\u2014"}
                     </td>
 
                     {/* Job */}
                     <td className="px-4 py-3 text-[#888888]">
-                      {(invoice as any).job?.title ?? "\u2014"}
+                      {("job" in invoice &&
+                        ((invoice.job as Record<string, unknown>)?.title as string)) ||
+                        "\u2014"}
                     </td>
 
                     {/* Total */}
@@ -103,7 +99,7 @@ export default async function InvoicesPage() {
                     <td className="px-4 py-3">
                       <span
                         className={`inline-flex rounded border px-2 py-0.5 text-xs font-medium ${
-                          statusColors[invoice.status] ??
+                          INVOICE_STATUS_COLORS[invoice.status] ??
                           "bg-[#1E1E1E] text-[#888888] border-[#2A2A2A]"
                         }`}
                       >
@@ -112,9 +108,7 @@ export default async function InvoicesPage() {
                     </td>
 
                     {/* Date */}
-                    <td className="px-4 py-3 text-[#888888]">
-                      {formatDate(invoice.createdAt)}
-                    </td>
+                    <td className="px-4 py-3 text-[#888888]">{formatDate(invoice.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>

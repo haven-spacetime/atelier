@@ -3,11 +3,11 @@ import { Send, Plus } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
+import { MARKETING_STATUS_COLORS } from "@/lib/constants";
+import { parseJsonArray } from "@/lib/format";
 
 export default async function MarketingPage() {
-  let campaigns: Awaited<
-    ReturnType<typeof prisma.marketingCampaign.findMany>
-  > = [];
+  let campaigns: Awaited<ReturnType<typeof prisma.marketingCampaign.findMany>> = [];
 
   try {
     campaigns = await prisma.marketingCampaign.findMany({
@@ -41,9 +41,7 @@ export default async function MarketingPage() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#141414] border border-[#2A2A2A]">
               <Send size={28} className="text-[#888888]" />
             </div>
-            <h2 className="text-lg font-medium text-[#F5F5F5]">
-              No campaigns yet
-            </h2>
+            <h2 className="text-lg font-medium text-[#F5F5F5]">No campaigns yet</h2>
             <p className="mt-1 text-sm text-[#888888]">
               Create your first marketing campaign to reach your customers.
             </p>
@@ -52,31 +50,18 @@ export default async function MarketingPage() {
           <div className="space-y-4">
             {campaigns.map((campaign) => {
               const statusColor =
-                campaign.status === "DRAFT"
-                  ? "bg-[#1E1E1E] text-[#888888] border-[#2A2A2A]"
-                  : campaign.status === "SCHEDULED"
-                    ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                    : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+                MARKETING_STATUS_COLORS[campaign.status] ??
+                "bg-[#1E1E1E] text-[#888888] border-[#2A2A2A]";
 
-              const tags: string[] = (() => {
-                try {
-                  return JSON.parse(campaign.recipientTags);
-                } catch {
-                  return [];
-                }
-              })();
+              const tags = parseJsonArray(campaign.recipientTags);
 
               const deliveredPct =
                 campaign.recipientCount > 0
-                  ? Math.round(
-                      (campaign.deliveredCount / campaign.recipientCount) * 100
-                    )
+                  ? Math.round((campaign.deliveredCount / campaign.recipientCount) * 100)
                   : 0;
               const readPct =
                 campaign.recipientCount > 0
-                  ? Math.round(
-                      (campaign.readCount / campaign.recipientCount) * 100
-                    )
+                  ? Math.round((campaign.readCount / campaign.recipientCount) * 100)
                   : 0;
 
               return (
@@ -86,9 +71,7 @@ export default async function MarketingPage() {
                 >
                   {/* Top row: name + status */}
                   <div className="flex items-start justify-between gap-4">
-                    <h3 className="text-lg font-medium text-[#F5F5F5]">
-                      {campaign.name}
-                    </h3>
+                    <h3 className="text-lg font-medium text-[#F5F5F5]">{campaign.name}</h3>
                     <span
                       className={`shrink-0 inline-flex rounded border px-2 py-0.5 text-xs font-medium ${statusColor}`}
                     >
@@ -97,9 +80,7 @@ export default async function MarketingPage() {
                   </div>
 
                   {/* Message preview */}
-                  <p className="mt-2 text-sm text-[#888888] line-clamp-2">
-                    {campaign.message}
-                  </p>
+                  <p className="mt-2 text-sm text-[#888888] line-clamp-2">{campaign.message}</p>
 
                   {/* Delivery stats for SENT campaigns */}
                   {campaign.status === "SENT" && (
@@ -120,9 +101,7 @@ export default async function MarketingPage() {
                         <p className="text-xs text-[#888888]">Delivered</p>
                         <p className="mt-1 text-lg font-medium text-[#F5F5F5]">
                           {campaign.deliveredCount}
-                          <span className="ml-1 text-xs text-[#888888]">
-                            ({deliveredPct}%)
-                          </span>
+                          <span className="ml-1 text-xs text-[#888888]">({deliveredPct}%)</span>
                         </p>
                         <div className="mt-2 h-1 w-full rounded-full bg-[#2A2A2A]">
                           <div
@@ -137,9 +116,7 @@ export default async function MarketingPage() {
                         <p className="text-xs text-[#888888]">Read</p>
                         <p className="mt-1 text-lg font-medium text-[#F5F5F5]">
                           {campaign.readCount}
-                          <span className="ml-1 text-xs text-[#888888]">
-                            ({readPct}%)
-                          </span>
+                          <span className="ml-1 text-xs text-[#888888]">({readPct}%)</span>
                         </p>
                         <div className="mt-2 h-1 w-full rounded-full bg-[#2A2A2A]">
                           <div

@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Plus, Wrench, Filter, User, DollarSign, ArrowRight } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { formatCurrency } from "@/lib/utils";
+import { JOB_STATUSES, JOB_STATUS_LABELS, JOB_TYPES, JOB_TYPE_COLORS } from "@/lib/constants";
+import { getNextStatus } from "@/lib/jobs";
 
 // ── Types ──────────────────────────────────────────
 
@@ -36,46 +38,6 @@ interface Job {
   customer: Customer;
   vehicle: Vehicle;
 }
-
-// ── Constants ──────────────────────────────────────
-
-const STATUS_COLUMNS = [
-  "INQUIRY",
-  "QUOTED",
-  "SCHEDULED",
-  "IN_PROGRESS",
-  "QC",
-  "COMPLETE",
-  "INVOICED",
-] as const;
-
-const STATUS_LABELS: Record<string, string> = {
-  INQUIRY: "Inquiry",
-  QUOTED: "Quoted",
-  SCHEDULED: "Scheduled",
-  IN_PROGRESS: "In Progress",
-  QC: "QC",
-  COMPLETE: "Complete",
-  INVOICED: "Invoiced",
-};
-
-const JOB_TYPES = [
-  "WRAP",
-  "PPF",
-  "CERAMIC",
-  "TINT",
-  "CUSTOM",
-  "DEALERSHIP",
-] as const;
-
-const TYPE_COLORS: Record<string, { bg: string; text: string }> = {
-  WRAP: { bg: "bg-purple-500/10", text: "text-purple-400" },
-  PPF: { bg: "bg-blue-500/10", text: "text-blue-400" },
-  CERAMIC: { bg: "bg-emerald-500/10", text: "text-emerald-400" },
-  TINT: { bg: "bg-amber-500/10", text: "text-amber-400" },
-  CUSTOM: { bg: "bg-pink-500/10", text: "text-pink-400" },
-  DEALERSHIP: { bg: "bg-cyan-500/10", text: "text-cyan-400" },
-};
 
 // ── Component ──────────────────────────────────────
 
@@ -113,9 +75,7 @@ export default function JobsPage() {
   const moveJob = useCallback(
     async (jobId: string, newStatus: string) => {
       // Optimistically update local state
-      setJobs((prev) =>
-        prev.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j))
-      );
+      setJobs((prev) => prev.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j)));
 
       // Persist to DB
       try {
@@ -132,14 +92,12 @@ export default function JobsPage() {
         fetchJobs(); // revert
       }
     },
-    [fetchJobs]
+    [fetchJobs],
   );
 
-  const filtered =
-    filterType === "ALL" ? jobs : jobs.filter((j) => j.type === filterType);
+  const filtered = filterType === "ALL" ? jobs : jobs.filter((j) => j.type === filterType);
 
-  const columnJobs = (status: string) =>
-    filtered.filter((j) => j.status === status);
+  const columnJobs = (status: string) => filtered.filter((j) => j.status === status);
 
   return (
     <>
@@ -154,10 +112,7 @@ export default function JobsPage() {
           <div className="flex items-center gap-3">
             {/* Filter by type */}
             <div className="relative flex items-center">
-              <Filter
-                size={14}
-                className="pointer-events-none absolute left-3 text-[#888888]"
-              />
+              <Filter size={14} className="pointer-events-none absolute left-3 text-[#888888]" />
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
@@ -194,13 +149,11 @@ export default function JobsPage() {
               <Wrench size={28} className="text-[#888888]" />
             </div>
             <h2 className="text-lg font-medium text-[#F5F5F5]">No jobs yet</h2>
-            <p className="mt-1 text-sm text-[#888888]">
-              Create your first job to get started.
-            </p>
+            <p className="mt-1 text-sm text-[#888888]">Create your first job to get started.</p>
           </div>
         ) : (
           <div className="flex gap-4 overflow-x-auto pb-4">
-            {STATUS_COLUMNS.map((status) => {
+            {JOB_STATUSES.map((status) => {
               const colJobs = columnJobs(status);
               const isOver = dragOverColumn === status;
               return (
@@ -208,7 +161,7 @@ export default function JobsPage() {
                   {/* Column header */}
                   <div className="mb-3 flex items-center gap-2">
                     <span className="text-xs font-medium uppercase tracking-wide text-[#888888]">
-                      {STATUS_LABELS[status]}
+                      {JOB_STATUS_LABELS[status]}
                     </span>
                     <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-[#1E1E1E] px-1.5 text-xs text-[#888888]">
                       {colJobs.length}
@@ -251,13 +204,7 @@ export default function JobsPage() {
                         No jobs
                       </div>
                     ) : (
-                      colJobs.map((job) => (
-                        <JobCard
-                          key={job.id}
-                          job={job}
-                          onAdvance={moveJob}
-                        />
-                      ))
+                      colJobs.map((job) => <JobCard key={job.id} job={job} onAdvance={moveJob} />)
                     )}
                   </div>
                 </div>
@@ -278,19 +225,13 @@ interface JobCardProps {
 }
 
 function JobCard({ job, onAdvance }: JobCardProps) {
-  const colors = TYPE_COLORS[job.type] ?? {
+  const colors = JOB_TYPE_COLORS[job.type] ?? {
     bg: "bg-[#1E1E1E]",
     text: "text-[#888888]",
   };
   const price = job.finalPrice ?? job.quotedPrice;
 
-  const currentIndex = STATUS_COLUMNS.indexOf(
-    job.status as (typeof STATUS_COLUMNS)[number]
-  );
-  const nextStatus =
-    currentIndex >= 0 && currentIndex < STATUS_COLUMNS.length - 1
-      ? STATUS_COLUMNS[currentIndex + 1]
-      : null;
+  const nextStatus = getNextStatus(job.status);
 
   return (
     <div
@@ -349,7 +290,7 @@ function JobCard({ job, onAdvance }: JobCardProps) {
           {nextStatus && (
             <button
               type="button"
-              title={`Advance to ${STATUS_LABELS[nextStatus]}`}
+              title={`Advance to ${JOB_STATUS_LABELS[nextStatus]}`}
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();

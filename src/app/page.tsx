@@ -1,45 +1,10 @@
+import Link from "next/link";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
-import { DollarSign, Wrench, Users, TrendingUp, Car } from "lucide-react";
-
-// Status badge color mapping
-function statusColor(status: string): string {
-  switch (status) {
-    case "IN_PROGRESS":
-      return "bg-[#C4A265]/15 text-[#C4A265]";
-    case "QC":
-      return "bg-[#FF9800]/15 text-[#FF9800]";
-    case "COMPLETE":
-    case "INVOICED":
-      return "bg-[#4CAF50]/15 text-[#4CAF50]";
-    case "SCHEDULED":
-      return "bg-[#2196F3]/15 text-[#2196F3]";
-    case "QUOTED":
-      return "bg-[#9C27B0]/15 text-[#9C27B0]";
-    case "INQUIRY":
-      return "bg-[#888888]/15 text-[#888888]";
-    default:
-      return "bg-[#888888]/15 text-[#888888]";
-  }
-}
-
-function inventoryStatusColor(status: string): string {
-  switch (status) {
-    case "AVAILABLE":
-      return "bg-[#4CAF50]/15 text-[#4CAF50]";
-    case "PENDING":
-      return "bg-[#FF9800]/15 text-[#FF9800]";
-    case "SOLD":
-      return "bg-[#888888]/15 text-[#888888]";
-    default:
-      return "bg-[#888888]/15 text-[#888888]";
-  }
-}
-
-function formatStatus(status: string): string {
-  return status.replace(/_/g, " ");
-}
+import { getJobStatusBadgeClass, INVENTORY_STATUS_COLORS } from "@/lib/constants";
+import { formatStatus, parseJsonArray } from "@/lib/format";
+import { DollarSign, Wrench, Users, TrendingUp, Car, Plus, UserPlus, FileText } from "lucide-react";
 
 export default async function DashboardPage() {
   let monthlyRevenue = 0;
@@ -71,75 +36,66 @@ export default async function DashboardPage() {
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
 
     // Run all queries in parallel
-    const [
-      revenueResult,
-      activeJobs,
-      customers,
-      pipelineResult,
-      jobs,
-      inventory,
-    ] = await Promise.all([
-      // Monthly revenue: sum of paid invoices this month
-      prisma.invoice.findMany({
-        where: {
-          status: "PAID",
-          paidAt: { gte: startOfMonth },
-        },
-        select: { total: true },
-      }),
+    const [revenueResult, activeJobs, customers, pipelineResult, jobs, inventory] =
+      await Promise.all([
+        // Monthly revenue: sum of paid invoices this month
+        prisma.invoice.findMany({
+          where: {
+            status: "PAID",
+            paidAt: { gte: startOfMonth },
+          },
+          select: { total: true },
+        }),
 
-      // Active jobs count
-      prisma.job.count({
-        where: {
-          status: { in: ["IN_PROGRESS", "QC"] },
-        },
-      }),
+        // Active jobs count
+        prisma.job.count({
+          where: {
+            status: { in: ["IN_PROGRESS", "QC"] },
+          },
+        }),
 
-      // Total customer count
-      prisma.customer.count(),
+        // Total customer count
+        prisma.customer.count(),
 
-      // Pipeline value: sum of quotedPrice for INQUIRY or QUOTED jobs
-      prisma.job.findMany({
-        where: {
-          status: { in: ["INQUIRY", "QUOTED"] },
-        },
-        select: { quotedPrice: true },
-      }),
+        // Pipeline value: sum of quotedPrice for INQUIRY or QUOTED jobs
+        prisma.job.findMany({
+          where: {
+            status: { in: ["INQUIRY", "QUOTED"] },
+          },
+          select: { quotedPrice: true },
+        }),
 
-      // Recent 5 jobs
-      prisma.job.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" },
-        include: {
-          customer: { select: { name: true } },
-          vehicle: { select: { year: true, make: true, model: true } },
-        },
-      }),
+        // Recent 5 jobs
+        prisma.job.findMany({
+          take: 5,
+          orderBy: { createdAt: "desc" },
+          include: {
+            customer: { select: { name: true } },
+            vehicle: { select: { year: true, make: true, model: true } },
+          },
+        }),
 
-      // Inventory vehicles (up to 4)
-      prisma.inventoryVehicle.findMany({
-        take: 4,
-        orderBy: { createdAt: "desc" },
-        select: {
-          id: true,
-          year: true,
-          make: true,
-          model: true,
-          color: true,
-          askingPrice: true,
-          status: true,
-          photos: true,
-        },
-      }),
-    ]);
+        // Inventory vehicles (up to 4)
+        prisma.inventoryVehicle.findMany({
+          take: 4,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            year: true,
+            make: true,
+            model: true,
+            color: true,
+            askingPrice: true,
+            status: true,
+            photos: true,
+          },
+        }),
+      ]);
 
     monthlyRevenue = revenueResult.reduce((sum, inv) => sum + inv.total, 0);
     activeJobsCount = activeJobs;
     customerCount = customers;
-    pipelineValue = pipelineResult.reduce(
-      (sum, job) => sum + (job.quotedPrice ?? 0),
-      0
-    );
+    pipelineValue = pipelineResult.reduce((sum, job) => sum + (job.quotedPrice ?? 0), 0);
     recentJobs = jobs;
     inventoryVehicles = inventory;
   } catch {
@@ -151,21 +107,25 @@ export default async function DashboardPage() {
       label: "Monthly Revenue",
       value: formatCurrency(monthlyRevenue),
       icon: DollarSign,
+      href: "/invoices",
     },
     {
       label: "Active Jobs",
       value: activeJobsCount.toString(),
       icon: Wrench,
+      href: "/jobs",
     },
     {
       label: "Customers",
       value: customerCount.toString(),
       icon: Users,
+      href: "/customers",
     },
     {
       label: "Pipeline Value",
       value: formatCurrency(pipelineValue),
       icon: TrendingUp,
+      href: "/jobs",
     },
   ];
 
@@ -178,31 +138,45 @@ export default async function DashboardPage() {
           {stats.map((stat) => {
             const Icon = stat.icon;
             return (
-              <div
-                key={stat.label}
-                className="relative bg-[#141414] border border-[#2A2A2A] rounded-lg p-6"
-              >
-                <Icon
-                  size={20}
-                  className="absolute right-5 top-5 text-[#888888]"
-                />
-                <p className="text-sm text-[#888888] uppercase tracking-wide">
-                  {stat.label}
-                </p>
-                <p className="mt-2 text-3xl font-display font-semibold text-[#F5F5F5]">
-                  {stat.value}
-                </p>
-              </div>
+              <Link key={stat.label} href={stat.href} className="block">
+                <div className="relative bg-[#141414] border border-[#2A2A2A] rounded-lg p-6 hover:border-[#C4A265] transition-colors duration-200">
+                  <Icon size={20} className="absolute right-5 top-5 text-[#888888]" />
+                  <p className="text-sm text-[#888888] uppercase tracking-wide">{stat.label}</p>
+                  <p className="mt-2 text-3xl font-display font-semibold text-[#F5F5F5]">
+                    {stat.value}
+                  </p>
+                </div>
+              </Link>
             );
           })}
+        </div>
+
+        {/* ── Quick Actions ── */}
+        <div className="flex gap-3">
+          <Link
+            href="/jobs/new"
+            className="inline-flex items-center gap-2 rounded bg-[#C4A265] px-4 py-2 text-sm font-medium text-[#0A0A0A] hover:bg-[#D4B275] transition-colors"
+          >
+            <Plus size={16} /> New Job
+          </Link>
+          <Link
+            href="/customers/new"
+            className="inline-flex items-center gap-2 rounded border border-[#2A2A2A] bg-[#141414] px-4 py-2 text-sm font-medium text-[#F5F5F5] hover:border-[#C4A265] transition-colors"
+          >
+            <UserPlus size={16} /> New Customer
+          </Link>
+          <Link
+            href="/invoices/new"
+            className="inline-flex items-center gap-2 rounded border border-[#2A2A2A] bg-[#141414] px-4 py-2 text-sm font-medium text-[#F5F5F5] hover:border-[#C4A265] transition-colors"
+          >
+            <FileText size={16} /> New Invoice
+          </Link>
         </div>
 
         {/* ── Recent Jobs Table ── */}
         <div className="bg-[#141414] border border-[#2A2A2A] rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-[#2A2A2A]">
-            <h2 className="font-display text-xl text-[#F5F5F5]">
-              Recent Jobs
-            </h2>
+            <h2 className="font-display text-xl text-[#F5F5F5]">Recent Jobs</h2>
           </div>
 
           {recentJobs.length === 0 ? (
@@ -234,28 +208,29 @@ export default async function DashboardPage() {
                 {recentJobs.map((job) => (
                   <tr
                     key={job.id}
-                    className="border-t border-[#2A2A2A] transition-colors duration-150 hover:bg-[#1A1A1A]"
+                    className="border-t border-[#2A2A2A] transition-colors duration-150 hover:bg-[#1A1A1A] cursor-pointer"
                   >
                     <td className="px-6 py-4 text-sm text-[#F5F5F5]">
-                      {job.title}
+                      <Link
+                        href={`/jobs/${job.id}`}
+                        className="hover:text-[#C4A265] transition-colors stretched-link"
+                      >
+                        {job.title}
+                      </Link>
                     </td>
-                    <td className="px-6 py-4 text-sm text-[#888888]">
-                      {job.customer.name}
-                    </td>
+                    <td className="px-6 py-4 text-sm text-[#888888]">{job.customer.name}</td>
                     <td className="px-6 py-4 text-sm text-[#888888]">
                       {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
                     </td>
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${statusColor(job.status)}`}
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${getJobStatusBadgeClass(job.status)}`}
                       >
                         {formatStatus(job.status)}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-right text-[#F5F5F5]">
-                      {job.quotedPrice != null
-                        ? formatCurrency(job.quotedPrice)
-                        : "--"}
+                      {job.quotedPrice != null ? formatCurrency(job.quotedPrice) : "--"}
                     </td>
                   </tr>
                 ))}
@@ -266,54 +241,58 @@ export default async function DashboardPage() {
 
         {/* ── Inventory Preview ── */}
         <div>
-          <h2 className="font-display text-xl text-[#F5F5F5] mb-4">
-            Inventory
-          </h2>
+          <h2 className="font-display text-xl text-[#F5F5F5] mb-4">Inventory</h2>
 
           {inventoryVehicles.length === 0 ? (
             <div className="bg-[#141414] border border-[#2A2A2A] rounded-lg px-6 py-12 text-center text-[#888888] text-sm">
-              No inventory vehicles yet. Add vehicles to your inventory to see
-              them here.
+              No inventory vehicles yet. Add vehicles to your inventory to see them here.
             </div>
           ) : (
             <div className="flex gap-6 overflow-x-auto pb-2">
               {inventoryVehicles.map((vehicle) => (
-                <div
+                <Link
+                  href="/inventory"
                   key={vehicle.id}
-                  className="min-w-[260px] flex-shrink-0 bg-[#141414] border border-[#2A2A2A] rounded-lg overflow-hidden"
+                  className="min-w-[260px] flex-shrink-0 block"
                 >
-                  {/* Vehicle image */}
-                  {(() => {
-                    let photos: string[] = [];
-                    try { photos = JSON.parse(vehicle.photos); } catch {}
-                    return photos.length > 0 ? (
-                      <div className="h-40 overflow-hidden bg-[#1A1A1A]">
-                        <img src={photos[0]} alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} className="h-full w-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="flex h-40 items-center justify-center bg-[#1A1A1A]">
-                        <Car size={40} className="text-[#2A2A2A]" />
-                      </div>
-                    );
-                  })()}
+                  <div className="bg-[#141414] border border-[#2A2A2A] rounded-lg overflow-hidden hover:border-[#C4A265] transition-colors duration-200">
+                    {/* Vehicle image */}
+                    {(() => {
+                      const photos = parseJsonArray(vehicle.photos);
+                      return photos.length > 0 ? (
+                        <div className="h-40 overflow-hidden bg-[#1A1A1A]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={photos[0]}
+                            alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-40 items-center justify-center bg-[#1A1A1A]">
+                          <Car size={40} className="text-[#2A2A2A]" />
+                        </div>
+                      );
+                    })()}
 
-                  {/* Details */}
-                  <div className="p-4 space-y-2">
-                    <p className="text-sm font-medium text-[#F5F5F5]">
-                      {vehicle.year} {vehicle.make} {vehicle.model}
-                    </p>
-                    <p className="font-display text-lg font-semibold text-[#C4A265]">
-                      {vehicle.askingPrice != null
-                        ? formatCurrency(vehicle.askingPrice)
-                        : "Price TBD"}
-                    </p>
-                    <span
-                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${inventoryStatusColor(vehicle.status)}`}
-                    >
-                      {vehicle.status}
-                    </span>
+                    {/* Details */}
+                    <div className="p-4 space-y-2">
+                      <p className="text-sm font-medium text-[#F5F5F5]">
+                        {vehicle.year} {vehicle.make} {vehicle.model}
+                      </p>
+                      <p className="font-display text-lg font-semibold text-[#C4A265]">
+                        {vehicle.askingPrice != null
+                          ? formatCurrency(vehicle.askingPrice)
+                          : "Price TBD"}
+                      </p>
+                      <span
+                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${INVENTORY_STATUS_COLORS[vehicle.status] ?? "bg-[#888888]/15 text-[#888888]"}`}
+                      >
+                        {vehicle.status}
+                      </span>
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}

@@ -3,10 +3,11 @@ import { Car, Plus } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { INVENTORY_STATUS_COLORS } from "@/lib/constants";
+import { parseJsonArray } from "@/lib/format";
 
 export default async function InventoryPage() {
-  let vehicles: Awaited<ReturnType<typeof prisma.inventoryVehicle.findMany>> =
-    [];
+  let vehicles: Awaited<ReturnType<typeof prisma.inventoryVehicle.findMany>> = [];
 
   try {
     vehicles = await prisma.inventoryVehicle.findMany({
@@ -40,9 +41,7 @@ export default async function InventoryPage() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#141414] border border-[#2A2A2A]">
               <Car size={28} className="text-[#888888]" />
             </div>
-            <h2 className="text-lg font-medium text-[#F5F5F5]">
-              No inventory yet
-            </h2>
+            <h2 className="text-lg font-medium text-[#F5F5F5]">No inventory yet</h2>
             <p className="mt-1 text-sm text-[#888888]">
               Add your first vehicle to start building your inventory.
             </p>
@@ -51,11 +50,8 @@ export default async function InventoryPage() {
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {vehicles.map((vehicle) => {
               const statusColor =
-                vehicle.status === "AVAILABLE"
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                  : vehicle.status === "PENDING"
-                    ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                    : "bg-[#1E1E1E] text-[#666666] border-[#2A2A2A]";
+                INVENTORY_STATUS_COLORS[vehicle.status] ??
+                "bg-[#1E1E1E] text-[#666666] border-[#2A2A2A]";
 
               return (
                 <div
@@ -64,11 +60,15 @@ export default async function InventoryPage() {
                 >
                   {/* Vehicle image */}
                   {(() => {
-                    let photos: string[] = [];
-                    try { photos = JSON.parse(vehicle.photos); } catch {}
+                    const photos = parseJsonArray(vehicle.photos);
                     return photos.length > 0 ? (
                       <div className="h-48 overflow-hidden bg-[#1A1A1A]">
-                        <img src={photos[0]} alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`} className="h-full w-full object-cover" />
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={photos[0]}
+                          alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
+                          className="h-full w-full object-cover"
+                        />
                       </div>
                     ) : (
                       <div className="flex h-48 items-center justify-center bg-[#1A1A1A]">
@@ -87,8 +87,7 @@ export default async function InventoryPage() {
                     {/* Color & Mileage */}
                     <p className="mt-1 text-sm text-[#888888]">
                       {vehicle.color}
-                      {vehicle.mileage != null &&
-                        ` \u00B7 ${vehicle.mileage.toLocaleString()} mi`}
+                      {vehicle.mileage != null && ` \u00B7 ${vehicle.mileage.toLocaleString()} mi`}
                     </p>
 
                     {/* Asking Price */}

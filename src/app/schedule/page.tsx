@@ -1,23 +1,8 @@
 import { Calendar } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
-
-/** Return Mon 00:00 and Sun 23:59:59 for the week containing `anchor`. */
-function getWeekBounds(anchor: Date) {
-  const day = anchor.getDay(); // 0=Sun … 6=Sat
-  const diffToMon = day === 0 ? -6 : 1 - day;
-  const monday = new Date(anchor);
-  monday.setHours(0, 0, 0, 0);
-  monday.setDate(monday.getDate() + diffToMon);
-
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(23, 59, 59, 999);
-
-  return { monday, sunday };
-}
-
-const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import { SCHEDULE_TYPE_COLORS } from "@/lib/constants";
+import { getWeekBounds, bucketByDayOfWeek, DAY_LABELS } from "@/lib/schedule";
 
 export default async function SchedulePage() {
   const now = new Date();
@@ -43,16 +28,7 @@ export default async function SchedulePage() {
     // Database may not be seeded yet
   }
 
-  // Bucket jobs by day-of-week index (0=Mon … 6=Sun)
-  const buckets: (typeof jobs)[] = Array.from({ length: 7 }, () => []);
-  for (const job of jobs) {
-    if (job.scheduledDate) {
-      const d = new Date(job.scheduledDate);
-      const dow = d.getDay(); // 0=Sun
-      const idx = dow === 0 ? 6 : dow - 1; // remap to 0=Mon
-      buckets[idx].push(job);
-    }
-  }
+  const buckets = bucketByDayOfWeek(jobs);
 
   // Build dates for column headers
   const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -60,15 +36,6 @@ export default async function SchedulePage() {
     d.setDate(monday.getDate() + i);
     return d;
   });
-
-  const typeColors: Record<string, string> = {
-    WRAP: "bg-purple-500/10 text-purple-400 border-purple-500/20",
-    PPF: "bg-blue-500/10 text-blue-400 border-blue-500/20",
-    CERAMIC: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-    TINT: "bg-amber-500/10 text-amber-400 border-amber-500/20",
-    CUSTOM: "bg-pink-500/10 text-pink-400 border-pink-500/20",
-    DEALERSHIP: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  };
 
   return (
     <>
@@ -125,9 +92,7 @@ export default async function SchedulePage() {
                 {/* Day column body */}
                 <div className="flex-1 space-y-2 rounded-lg bg-[#0E0E0E] border border-[#2A2A2A] p-2 min-h-[200px]">
                   {dayJobs.length === 0 ? (
-                    <p className="py-4 text-center text-xs text-[#2A2A2A]">
-                      &mdash;
-                    </p>
+                    <p className="py-4 text-center text-xs text-[#2A2A2A]">&mdash;</p>
                   ) : (
                     dayJobs.map((job) => (
                       <div
@@ -135,26 +100,23 @@ export default async function SchedulePage() {
                         className="rounded-lg bg-[#141414] border border-[#2A2A2A] p-2.5 transition-colors duration-200 hover:border-[#C4A265]"
                       >
                         {/* Job title */}
-                        <p className="text-xs font-medium text-[#F5F5F5] truncate">
-                          {job.title}
-                        </p>
+                        <p className="text-xs font-medium text-[#F5F5F5] truncate">{job.title}</p>
 
                         {/* Customer name */}
                         <p className="mt-0.5 text-[11px] text-[#888888] truncate">
-                          {(job as any).customer?.name ?? ""}
+                          {"customer" in job &&
+                            ((job.customer as Record<string, unknown>)?.name as string)}
                         </p>
 
                         {/* Bay number */}
                         {job.bayNumber != null && (
-                          <p className="mt-1 text-[11px] text-[#666666]">
-                            Bay {job.bayNumber}
-                          </p>
+                          <p className="mt-1 text-[11px] text-[#666666]">Bay {job.bayNumber}</p>
                         )}
 
                         {/* Job type badge */}
                         <span
                           className={`mt-1.5 inline-flex rounded border px-1.5 py-0.5 text-[10px] font-medium ${
-                            typeColors[job.type] ??
+                            SCHEDULE_TYPE_COLORS[job.type] ??
                             "bg-[#1E1E1E] text-[#888888] border-[#2A2A2A]"
                           }`}
                         >
@@ -175,9 +137,7 @@ export default async function SchedulePage() {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#141414] border border-[#2A2A2A]">
               <Calendar size={28} className="text-[#888888]" />
             </div>
-            <h2 className="text-lg font-medium text-[#F5F5F5]">
-              No jobs scheduled this week
-            </h2>
+            <h2 className="text-lg font-medium text-[#F5F5F5]">No jobs scheduled this week</h2>
             <p className="mt-1 text-sm text-[#888888]">
               Jobs with a scheduled date will appear here.
             </p>

@@ -13,10 +13,7 @@ const VALID_STATUSES = [
 
 type JobStatus = (typeof VALID_STATUSES)[number];
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const body = await request.json();
@@ -27,7 +24,7 @@ export async function PATCH(
         {
           error: `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -61,9 +58,6 @@ export async function PATCH(
     return NextResponse.json(updatedJob, { status: 200 });
   } catch (error) {
     console.error("PATCH /api/jobs/[id] error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

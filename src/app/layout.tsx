@@ -37,9 +37,7 @@ export default function RootLayout({
           <Sidebar />
 
           {/* Main content area — offset by sidebar width */}
-          <main className="ml-60 flex-1">
-            {children}
-          </main>
+          <main className="ml-60 flex-1">{children}</main>
         </div>
       </body>
     </html>
