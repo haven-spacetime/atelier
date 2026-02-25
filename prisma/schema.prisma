@@ -1,0 +1,141 @@
+// Atelier Motors CRM — Prisma Schema
+// Datasource: SQLite (no native enum support; enums are stored as String with comments)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ──────────────────────────────────────────────
+// Customer
+// ──────────────────────────────────────────────
+model Customer {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  phone     String?
+  address   String?
+  notes     String?
+  tags      String   @default("[]") // JSON array — e.g. ["vip","repeat","referral"]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  vehicles Vehicle[]
+  jobs     Job[]
+  invoices Invoice[]
+}
+
+// ──────────────────────────────────────────────
+// Vehicle
+// ──────────────────────────────────────────────
+model Vehicle {
+  id         String   @id @default(cuid())
+  customerId String
+  year       Int
+  make       String
+  model      String
+  color      String
+  vin        String?  // optional — not every customer has this handy
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  jobs     Job[]
+}
+
+// ──────────────────────────────────────────────
+// Job
+// ──────────────────────────────────────────────
+// type  — valid values: WRAP | PPF | CERAMIC | TINT | CUSTOM | DEALERSHIP
+// status — valid values: INQUIRY | QUOTED | SCHEDULED | IN_PROGRESS | QC | COMPLETE | INVOICED
+model Job {
+  id             String   @id @default(cuid())
+  customerId     String
+  vehicleId      String
+  type           String   // WRAP | PPF | CERAMIC | TINT | CUSTOM | DEALERSHIP
+  status         String   @default("INQUIRY") // INQUIRY | QUOTED | SCHEDULED | IN_PROGRESS | QC | COMPLETE | INVOICED
+  title          String
+  description    String?
+  estimatedHours Float?
+  actualHours    Float?
+  materialNotes  String?
+  assignedTo     String?
+  bayNumber      Int?
+  scheduledDate  DateTime?
+  completedDate  DateTime?
+  quotedPrice    Float?
+  finalPrice     Float?
+  depositAmount  Float?
+  depositPaid    Boolean  @default(false)
+  photos         String   @default("[]") // JSON array of photo URLs
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id])
+  invoices Invoice[]
+}
+
+// ──────────────────────────────────────────────
+// Invoice
+// ──────────────────────────────────────────────
+// status — valid values: DRAFT | SENT | PAID | OVERDUE
+model Invoice {
+  id            String    @id @default(cuid())
+  jobId         String
+  customerId    String
+  invoiceNumber String    @unique
+  lineItems     String    @default("[]") // JSON array — [{description, qty, unitPrice, total}]
+  subtotal      Float
+  tax           Float
+  total         Float
+  status        String    @default("DRAFT") // DRAFT | SENT | PAID | OVERDUE
+  paidAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  job      Job      @relation(fields: [jobId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+}
+
+// ──────────────────────────────────────────────
+// InventoryVehicle — dealership / consignment stock
+// ──────────────────────────────────────────────
+// status — valid values: AVAILABLE | PENDING | SOLD
+model InventoryVehicle {
+  id          String    @id @default(cuid())
+  year        Int
+  make        String
+  model       String
+  color       String
+  vin         String?
+  mileage     Int?
+  photos      String    @default("[]") // JSON array of photo URLs
+  askingPrice Float?
+  costBasis   Float?
+  status      String    @default("AVAILABLE") // AVAILABLE | PENDING | SOLD
+  soldAt      DateTime?
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ──────────────────────────────────────────────
+// MarketingCampaign — iMessage / SMS blasts
+// ──────────────────────────────────────────────
+// status — valid values: DRAFT | SCHEDULED | SENT
+model MarketingCampaign {
+  id             String    @id @default(cuid())
+  name           String
+  message        String
+  recipientTags  String    @default("[]") // JSON array of tag filters
+  sentAt         DateTime?
+  recipientCount Int       @default(0)
+  deliveredCount Int       @default(0)
+  readCount      Int       @default(0)
+  status         String    @default("DRAFT") // DRAFT | SCHEDULED | SENT
+  createdAt      DateTime  @default(now())
+}
