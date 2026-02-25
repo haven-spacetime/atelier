@@ -132,8 +132,8 @@ export default function SendMessageButton({ customerId, name, phone, jobs = [] }
         setSending(false);
         setStatus("success");
         setMessage("");
-        // Defer refresh so state updates commit before the server re-render
-        setTimeout(() => router.refresh(), 300);
+        // Refresh server data in background after success feedback is visible
+        router.refresh();
       }
     } catch {
       setErrorMsg("Network error — is BlueBubbles running?");

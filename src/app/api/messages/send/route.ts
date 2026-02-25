@@ -46,21 +46,28 @@ export async function POST(request: NextRequest) {
       },
     );
 
+    const text = await res.text();
+
     if (!res.ok) {
-      const text = await res.text();
       return NextResponse.json(
         { error: `BlueBubbles error ${res.status}: ${text}` },
         { status: 502 },
       );
     }
 
-    const data = await res.json();
+    // Parse response if possible, but don't fail if it's not JSON
+    let data: unknown = null;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
+    }
 
-    // Stamp lastContactedAt on the customer after a successful send
+    // Stamp lastContactedAt + method on the customer after a successful send
     if (customerId) {
       await prisma.customer.update({
         where: { id: customerId },
-        data: { lastContactedAt: new Date() },
+        data: { lastContactedAt: new Date(), lastContactMethod: "iMessage" },
       });
     }
 

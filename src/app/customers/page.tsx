@@ -35,6 +35,7 @@ export default async function CustomersPage() {
           : typeof c.lastContactedAt === "string"
             ? c.lastContactedAt
             : null,
+      lastContactMethod: c.lastContactMethod ?? null,
       createdAt: c.createdAt.toISOString(),
       _count: {
         vehicles: c._count.vehicles,

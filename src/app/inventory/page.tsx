@@ -54,9 +54,10 @@ export default async function InventoryPage() {
                 "bg-[#1E1E1E] text-[#666666] border-[#2A2A2A]";
 
               return (
-                <div
+                <Link
                   key={vehicle.id}
-                  className="overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#141414] transition-colors duration-200 hover:border-[#C4A265]"
+                  href={`/inventory/${vehicle.id}`}
+                  className="block overflow-hidden rounded-lg border border-[#2A2A2A] bg-[#141414] transition-colors duration-200 hover:border-[#C4A265]"
                 >
                   {/* Vehicle image */}
                   {(() => {
@@ -121,7 +122,7 @@ export default async function InventoryPage() {
                       )}
                     </div>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>

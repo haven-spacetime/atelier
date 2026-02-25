@@ -1,9 +1,10 @@
 import Link from "next/link";
 import Header from "@/components/layout/Header";
+import PipelineJobs from "@/components/dashboard/PipelineJobs";
 import { prisma } from "@/lib/db";
 import { formatCurrency } from "@/lib/utils";
-import { getJobStatusBadgeClass, INVENTORY_STATUS_COLORS } from "@/lib/constants";
-import { formatStatus, parseJsonArray } from "@/lib/format";
+import { INVENTORY_STATUS_COLORS } from "@/lib/constants";
+import { parseJsonArray } from "@/lib/format";
 import { DollarSign, Wrench, Users, TrendingUp, Car, Plus, UserPlus, FileText } from "lucide-react";
 
 export default async function DashboardPage() {
@@ -65,9 +66,11 @@ export default async function DashboardPage() {
           select: { quotedPrice: true },
         }),
 
-        // Recent 5 jobs
+        // Pipeline jobs — everything not yet complete or invoiced
         prisma.job.findMany({
-          take: 5,
+          where: {
+            status: { notIn: ["COMPLETE", "INVOICED"] },
+          },
           orderBy: { createdAt: "desc" },
           include: {
             customer: { select: { name: true } },
@@ -173,70 +176,15 @@ export default async function DashboardPage() {
           </Link>
         </div>
 
-        {/* ── Recent Jobs Table ── */}
+        {/* ── Pipeline Snapshot ── */}
         <div className="bg-[#141414] border border-[#2A2A2A] rounded-lg overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#2A2A2A]">
-            <h2 className="font-display text-xl text-[#F5F5F5]">Recent Jobs</h2>
+          <div className="flex items-center justify-between px-6 py-4 border-b border-[#2A2A2A]">
+            <h2 className="font-display text-xl text-[#F5F5F5]">Pipeline Snapshot</h2>
+            <span className="text-xs text-[#555555]">
+              {recentJobs.length} job{recentJobs.length !== 1 ? "s" : ""} in progress
+            </span>
           </div>
-
-          {recentJobs.length === 0 ? (
-            <div className="px-6 py-12 text-center text-[#888888] text-sm">
-              No jobs yet. Create your first job to get started.
-            </div>
-          ) : (
-            <table className="w-full">
-              <thead>
-                <tr className="bg-[#1A1A1A]">
-                  <th className="px-6 py-3 text-left text-xs uppercase text-[#888888] tracking-wide font-medium">
-                    Job Title
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-[#888888] tracking-wide font-medium">
-                    Customer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-[#888888] tracking-wide font-medium">
-                    Vehicle
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs uppercase text-[#888888] tracking-wide font-medium">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs uppercase text-[#888888] tracking-wide font-medium">
-                    Price
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentJobs.map((job) => (
-                  <tr
-                    key={job.id}
-                    className="border-t border-[#2A2A2A] transition-colors duration-150 hover:bg-[#1A1A1A] cursor-pointer"
-                  >
-                    <td className="px-6 py-4 text-sm text-[#F5F5F5]">
-                      <Link
-                        href={`/jobs/${job.id}`}
-                        className="hover:text-[#C4A265] transition-colors stretched-link"
-                      >
-                        {job.title}
-                      </Link>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-[#888888]">{job.customer.name}</td>
-                    <td className="px-6 py-4 text-sm text-[#888888]">
-                      {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${getJobStatusBadgeClass(job.status)}`}
-                      >
-                        {formatStatus(job.status)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-right text-[#F5F5F5]">
-                      {job.quotedPrice != null ? formatCurrency(job.quotedPrice) : "--"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
+          <PipelineJobs jobs={recentJobs} />
         </div>
 
         {/* ── Inventory Preview ── */}

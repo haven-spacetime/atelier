@@ -30,6 +30,7 @@ export interface CustomerWithMeta {
   notes: string | null;
   tags: string;
   lastContactedAt: string | null;
+  lastContactMethod: string | null;
   createdAt: string;
   _count: { vehicles: number; jobs: number };
 }
@@ -523,10 +524,20 @@ export default function CustomerList({ customers }: Props) {
                           <span className="inline-flex items-center gap-1 text-amber-400">
                             <AlertCircle size={13} />
                             {formatDate(customer.lastContactedAt!)}
+                            {customer.lastContactMethod && (
+                              <span className="text-amber-400/60 text-xs">
+                                via {customer.lastContactMethod}
+                              </span>
+                            )}
                           </span>
                         ) : (
                           <span className="text-[#888888]">
                             {formatDate(customer.lastContactedAt!)}
+                            {customer.lastContactMethod && (
+                              <span className="ml-1 text-[#555555] text-xs">
+                                via {customer.lastContactMethod}
+                              </span>
+                            )}
                           </span>
                         )}
                       </td>
