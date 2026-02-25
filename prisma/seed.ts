@@ -113,6 +113,19 @@ async function main() {
         lastContactedAt: daysAgo(45),
       },
     }),
+    // Haven Vu — demo customer
+    prisma.customer.create({
+      data: {
+        name: "Haven Vu",
+        email: "haven.vu@gmail.com",
+        phone: "+1(714)725-0215",
+        address: "15 Strada Corsa, Newport Beach, CA 92660",
+        notes:
+          "Close friend of Brandon. Getting a full color change wrap on the Urus. Very particular — wants to review progress photos throughout.",
+        tags: JSON.stringify(["vip", "friend"]),
+        lastContactedAt: daysAgo(1),
+      },
+    }),
   ]);
 
   console.log(`Created ${customers.length} customers.`);
@@ -253,6 +266,19 @@ async function main() {
         color: "Verde Mantis",
         vin: "ZHWUT4ZF4PLA17005",
         notes: "New customer. Window tint + ceramic.",
+      },
+    }),
+    // Haven Vu
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[8].id,
+        year: 2023,
+        make: "Lamborghini",
+        model: "Urus S",
+        color: "Bianco Monocerus",
+        vin: "ZPBUA1ZL2PLA12345",
+        notes:
+          "Full color change wrap. White base going to a custom color. Handle with care — very personal vehicle.",
       },
     }),
   ]);
@@ -457,6 +483,29 @@ async function main() {
         estimatedHours: 10,
         materialNotes: "XPEL XR Plus tint rolls. Ceramic Pro Sport (2 layers).",
         quotedPrice: 2800,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Job 11 — Haven Vu Urus: Full Color Change Wrap — IN_PROGRESS
+    prisma.job.create({
+      data: {
+        customerId: customers[8].id,
+        vehicleId: vehicles[12].id,
+        type: "WRAP",
+        status: "IN_PROGRESS",
+        title: "Full Color Change Wrap — Urus S",
+        description:
+          "Full color change from Bianco Monocerus (white) to Gloss Midnight Blue. Chrome delete in Satin Black. Door handles and mirrors wrapped to match.",
+        estimatedHours: 50,
+        actualHours: 18,
+        materialNotes:
+          "Avery SW900 Gloss Midnight Blue — 120 ft for full SUV coverage. 3M 1080 Satin Black for chrome delete.",
+        assignedTo: "Mike",
+        bayNumber: 2,
+        scheduledDate: daysAgo(2),
+        quotedPrice: 7500,
+        depositAmount: 3750,
+        depositPaid: true,
         photos: JSON.stringify([]),
       },
     }),

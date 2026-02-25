@@ -8,7 +8,6 @@ import {
   StickyNote,
   Car,
   Wrench,
-  MessageSquare,
   DollarSign,
   Activity,
   Briefcase,
@@ -18,6 +17,7 @@ import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { JOB_STATUS_COLORS, JOB_STATUS_LABELS, JOB_TYPE_COLORS } from "@/lib/constants";
 import { parseJsonArray } from "@/lib/format";
+import SendMessageButton from "@/components/customers/SendMessageButton";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -114,14 +114,7 @@ export default async function CustomerDetailPage({ params }: PageProps) {
               <Mail size={13} />
               Email
             </a>
-            <Link
-              href={`/marketing/new?customer=${id}`}
-              className="inline-flex items-center gap-1.5 rounded border border-[#2A2A2A] bg-[#141414] px-3 py-1.5 text-xs font-medium text-[#888888] transition-colors duration-200 hover:border-[#C4A265]/40 hover:text-[#C4A265]"
-              title="Send SMS"
-            >
-              <MessageSquare size={13} />
-              SMS
-            </Link>
+            {customer.phone && <SendMessageButton name={customer.name} phone={customer.phone} />}
           </div>
         </div>
 
