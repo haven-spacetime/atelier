@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus, Wrench, Filter, User, DollarSign } from "lucide-react";
+import { Plus, Wrench, Filter, User, DollarSign, ArrowRight } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { formatCurrency } from "@/lib/utils";
 
@@ -83,9 +83,20 @@ export default function JobsPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>("ALL");
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
+  const fetchJobs = useCallback(async () => {
+    try {
+      const res = await fetch("/api/jobs");
+      const data = await res.json();
+      setJobs(data);
+    } catch (err) {
+      console.error("Failed to fetch jobs:", err);
+    }
+  }, []);
 
   useEffect(() => {
-    async function fetchJobs() {
+    async function initialFetch() {
       try {
         const res = await fetch("/api/jobs");
         const data = await res.json();
@@ -96,8 +107,33 @@ export default function JobsPage() {
         setLoading(false);
       }
     }
-    fetchJobs();
+    initialFetch();
   }, []);
+
+  const moveJob = useCallback(
+    async (jobId: string, newStatus: string) => {
+      // Optimistically update local state
+      setJobs((prev) =>
+        prev.map((j) => (j.id === jobId ? { ...j, status: newStatus } : j))
+      );
+
+      // Persist to DB
+      try {
+        const res = await fetch(`/api/jobs/${jobId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: newStatus }),
+        });
+        if (!res.ok) {
+          // Revert on failure — re-fetch
+          fetchJobs();
+        }
+      } catch {
+        fetchJobs(); // revert
+      }
+    },
+    [fetchJobs]
+  );
 
   const filtered =
     filterType === "ALL" ? jobs : jobs.filter((j) => j.type === filterType);
@@ -166,6 +202,7 @@ export default function JobsPage() {
           <div className="flex gap-4 overflow-x-auto pb-4">
             {STATUS_COLUMNS.map((status) => {
               const colJobs = columnJobs(status);
+              const isOver = dragOverColumn === status;
               return (
                 <div key={status} className="min-w-[280px] flex-shrink-0">
                   {/* Column header */}
@@ -179,14 +216,47 @@ export default function JobsPage() {
                   </div>
 
                   {/* Column body */}
-                  <div className="space-y-3 rounded-lg bg-[#0E0E0E] p-3 min-h-[200px]">
+                  <div
+                    className={[
+                      "space-y-3 rounded-lg bg-[#0E0E0E] p-3 min-h-[200px] transition-all duration-150",
+                      isOver
+                        ? "ring-1 ring-[#C4A265]/50 border border-[#C4A265]"
+                        : "border border-transparent",
+                    ].join(" ")}
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setDragOverColumn(status);
+                    }}
+                    onDragEnter={(e) => {
+                      e.preventDefault();
+                      setDragOverColumn(status);
+                    }}
+                    onDragLeave={(e) => {
+                      // Only clear if leaving to an element outside this column body
+                      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+                        setDragOverColumn(null);
+                      }
+                    }}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setDragOverColumn(null);
+                      const jobId = e.dataTransfer.getData("jobId");
+                      if (jobId) {
+                        moveJob(jobId, status);
+                      }
+                    }}
+                  >
                     {colJobs.length === 0 ? (
                       <div className="flex items-center justify-center py-8 text-xs text-[#555555]">
                         No jobs
                       </div>
                     ) : (
                       colJobs.map((job) => (
-                        <JobCard key={job.id} job={job} />
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          onAdvance={moveJob}
+                        />
                       ))
                     )}
                   </div>
@@ -202,56 +272,96 @@ export default function JobsPage() {
 
 // ── Job Card ───────────────────────────────────────
 
-function JobCard({ job }: { job: Job }) {
+interface JobCardProps {
+  job: Job;
+  onAdvance: (jobId: string, newStatus: string) => void;
+}
+
+function JobCard({ job, onAdvance }: JobCardProps) {
   const colors = TYPE_COLORS[job.type] ?? {
     bg: "bg-[#1E1E1E]",
     text: "text-[#888888]",
   };
   const price = job.finalPrice ?? job.quotedPrice;
 
+  const currentIndex = STATUS_COLUMNS.indexOf(
+    job.status as (typeof STATUS_COLUMNS)[number]
+  );
+  const nextStatus =
+    currentIndex >= 0 && currentIndex < STATUS_COLUMNS.length - 1
+      ? STATUS_COLUMNS[currentIndex + 1]
+      : null;
+
   return (
-    <Link
-      href={`/jobs/${job.id}`}
-      className="block rounded-lg border border-[#2A2A2A] bg-[#141414] p-4 transition-colors duration-200 hover:border-[#C4A265]"
+    <div
+      draggable={true}
+      onDragStart={(e) => {
+        e.dataTransfer.setData("jobId", job.id);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      className="cursor-grab active:cursor-grabbing"
     >
-      {/* Title */}
-      <h3 className="font-medium text-[#F5F5F5]">{job.title}</h3>
+      <Link
+        href={`/jobs/${job.id}`}
+        className="block rounded-lg border border-[#2A2A2A] bg-[#141414] p-4 transition-colors duration-200 hover:border-[#C4A265]"
+      >
+        {/* Title */}
+        <h3 className="font-medium text-[#F5F5F5]">{job.title}</h3>
 
-      {/* Customer */}
-      <p className="mt-1 text-sm text-[#888888]">{job.customer.name}</p>
+        {/* Customer */}
+        <p className="mt-1 text-sm text-[#888888]">{job.customer.name}</p>
 
-      {/* Vehicle */}
-      <p className="mt-0.5 text-sm text-[#888888]">
-        {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
-      </p>
+        {/* Vehicle */}
+        <p className="mt-0.5 text-sm text-[#888888]">
+          {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
+        </p>
 
-      {/* Type badge */}
-      <div className="mt-3">
-        <span
-          className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}
-        >
-          {job.type}
-        </span>
-      </div>
-
-      {/* Bottom row: price + assigned */}
-      <div className="mt-3 flex items-center justify-between border-t border-[#2A2A2A] pt-3">
-        {price != null ? (
-          <span className="flex items-center gap-1 text-sm font-medium text-[#C4A265]">
-            <DollarSign size={13} />
-            {formatCurrency(price)}
+        {/* Type badge */}
+        <div className="mt-3">
+          <span
+            className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-medium ${colors.bg} ${colors.text}`}
+          >
+            {job.type}
           </span>
-        ) : (
-          <span className="text-xs text-[#555555]">No quote</span>
-        )}
+        </div>
 
-        {job.assignedTo && (
-          <span className="flex items-center gap-1 text-xs text-[#888888]">
-            <User size={12} />
-            {job.assignedTo}
-          </span>
-        )}
-      </div>
-    </Link>
+        {/* Bottom row: price + assigned + advance button */}
+        <div className="mt-3 flex items-center justify-between border-t border-[#2A2A2A] pt-3">
+          <div className="flex items-center gap-3">
+            {price != null ? (
+              <span className="flex items-center gap-1 text-sm font-medium text-[#C4A265]">
+                <DollarSign size={13} />
+                {formatCurrency(price)}
+              </span>
+            ) : (
+              <span className="text-xs text-[#555555]">No quote</span>
+            )}
+
+            {job.assignedTo && (
+              <span className="flex items-center gap-1 text-xs text-[#888888]">
+                <User size={12} />
+                {job.assignedTo}
+              </span>
+            )}
+          </div>
+
+          {/* Quick-advance button */}
+          {nextStatus && (
+            <button
+              type="button"
+              title={`Advance to ${STATUS_LABELS[nextStatus]}`}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAdvance(job.id, nextStatus);
+              }}
+              className="rounded p-1 text-[#888888] transition-colors duration-150 hover:text-[#C4A265]"
+            >
+              <ArrowRight size={14} />
+            </button>
+          )}
+        </div>
+      </Link>
+    </div>
   );
 }

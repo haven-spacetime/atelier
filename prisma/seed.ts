@@ -18,6 +18,11 @@ async function main() {
 
   console.log('Cleared existing data.')
 
+  // ─── Date helpers ─────────────────────────────────────────────
+  const now = new Date()
+  const daysAgo = (n: number) => new Date(now.getTime() - n * 86400000)
+  const daysFromNow = (n: number) => new Date(now.getTime() + n * 86400000)
+
   // ─── Customers ───────────────────────────────────────────────
   const customers = await Promise.all([
     prisma.customer.create({
@@ -28,6 +33,7 @@ async function main() {
         address: '2847 Pacific Heights Blvd, San Francisco, CA 94115',
         notes: 'Tech founder. Prefers matte finishes. Has referred 3 clients.',
         tags: JSON.stringify(['vip', 'repeat', 'referral-source']),
+        lastContactedAt: daysAgo(2),
       },
     }),
     prisma.customer.create({
@@ -38,6 +44,7 @@ async function main() {
         address: '1200 Broadway, Burlingame, CA 94010',
         notes: 'Interior designer. Very particular about color matching.',
         tags: JSON.stringify(['vip', 'repeat']),
+        lastContactedAt: daysAgo(5),
       },
     }),
     prisma.customer.create({
@@ -48,6 +55,7 @@ async function main() {
         address: '450 Atherton Ave, Atherton, CA 94027',
         notes: 'Hedge fund. Has 8-car collection. Budget is never an issue.',
         tags: JSON.stringify(['vip', 'high-value', 'collector']),
+        lastContactedAt: daysAgo(1),
       },
     }),
     prisma.customer.create({
@@ -58,6 +66,7 @@ async function main() {
         address: '3100 Lakeshore Ave, Oakland, CA 94610',
         notes: 'Content creator. Wants builds documented for social media.',
         tags: JSON.stringify(['influencer', 'social-media']),
+        lastContactedAt: daysAgo(14),
       },
     }),
     prisma.customer.create({
@@ -68,6 +77,7 @@ async function main() {
         address: '8800 Saratoga Hills Rd, Saratoga, CA 95070',
         notes: 'Russian collector. Flies cars in from overseas. PPF everything.',
         tags: JSON.stringify(['collector', 'international', 'ppf-only']),
+        lastContactedAt: daysAgo(8),
       },
     }),
     prisma.customer.create({
@@ -78,6 +88,7 @@ async function main() {
         address: '560 Marina Blvd, San Francisco, CA 94123',
         notes: 'Porsche enthusiast. Trades up every 2 years.',
         tags: JSON.stringify(['repeat', 'porsche-club']),
+        lastContactedAt: daysAgo(22),
       },
     }),
     prisma.customer.create({
@@ -88,6 +99,7 @@ async function main() {
         address: '1400 El Camino Real, Menlo Park, CA 94025',
         notes: 'Dealership owner. Sends bulk PPF and ceramic work.',
         tags: JSON.stringify(['dealership', 'bulk', 'b2b']),
+        lastContactedAt: daysAgo(3),
       },
     }),
     prisma.customer.create({
@@ -98,6 +110,7 @@ async function main() {
         address: '900 Welch Rd, Palo Alto, CA 94304',
         notes: 'First-time customer. Referred by Marcus Chen.',
         tags: JSON.stringify(['new', 'referral']),
+        lastContactedAt: daysAgo(45),
       },
     }),
   ])
@@ -247,10 +260,6 @@ async function main() {
   console.log(`Created ${vehicles.length} vehicles.`)
 
   // ─── Jobs ────────────────────────────────────────────────────
-  const now = new Date()
-  const daysAgo = (n: number) => new Date(now.getTime() - n * 86400000)
-  const daysFromNow = (n: number) => new Date(now.getTime() + n * 86400000)
-
   const jobs = await Promise.all([
     // Job 1 — Marcus Chen Lambo: full wrap — COMPLETE
     prisma.job.create({

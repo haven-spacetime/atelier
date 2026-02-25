@@ -12,10 +12,12 @@ import {
   User,
   CheckCircle,
   DollarSign,
+  ExternalLink,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { prisma } from "@/lib/db";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import StagePipeline from "@/components/jobs/StagePipeline";
 
 // ── Status config ─────────────────────────────────
 
@@ -97,13 +99,13 @@ export default async function JobDetailPage({
       <Header title={job.title} />
       <div className="p-6">
         {/* Back link + status badge */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between">
           <Link
             href="/jobs"
             className="inline-flex items-center gap-1.5 text-sm text-[#888888] transition-colors duration-200 hover:text-[#F5F5F5]"
           >
             <ArrowLeft size={16} />
-            Back to Jobs
+            View All Jobs
           </Link>
 
           <div
@@ -113,6 +115,9 @@ export default async function JobDetailPage({
             {STATUS_LABELS[job.status] ?? job.status}
           </div>
         </div>
+
+        {/* Stage Pipeline */}
+        <StagePipeline jobId={job.id} currentStatus={job.status} />
 
         {/* Two-column layout */}
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -270,12 +275,9 @@ export default async function JobDetailPage({
               <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#888888]">
                 Customer
               </h3>
-              <Link
-                href={`/customers/${job.customer.id}`}
-                className="block text-sm font-medium text-[#F5F5F5] transition-colors duration-200 hover:text-[#C4A265]"
-              >
+              <p className="text-sm font-medium text-[#F5F5F5]">
                 {job.customer.name}
-              </Link>
+              </p>
               {job.customer.phone && (
                 <a
                   href={`tel:${job.customer.phone}`}
@@ -285,6 +287,13 @@ export default async function JobDetailPage({
                   {job.customer.phone}
                 </a>
               )}
+              <Link
+                href={`/customers/${job.customer.id}`}
+                className="mt-3 inline-flex items-center gap-1.5 rounded border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-1.5 text-xs font-medium text-[#C4A265] transition-colors duration-200 hover:bg-[#222222] hover:border-[#C4A265]/40"
+              >
+                <ExternalLink size={11} />
+                View Customer
+              </Link>
             </div>
 
             {/* Vehicle Card */}
@@ -296,6 +305,9 @@ export default async function JobDetailPage({
                 {job.vehicle.year} {job.vehicle.make} {job.vehicle.model}
               </p>
               <p className="mt-1 text-sm text-[#888888]">{job.vehicle.color}</p>
+              {job.vehicle.vin && (
+                <p className="mt-1 font-mono text-xs text-[#555555]">{job.vehicle.vin}</p>
+              )}
             </div>
 
             {/* Pricing Card */}
@@ -348,14 +360,13 @@ export default async function JobDetailPage({
               </div>
             </div>
 
-            {/* Status Actions */}
+            {/* Status Timeline */}
             <div className="rounded-lg border border-[#2A2A2A] bg-[#141414] p-5">
               <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-[#888888]">
-                Status Actions
+                Pipeline
               </h3>
 
-              {/* Current status timeline */}
-              <div className="mb-4 space-y-2">
+              <div className="space-y-2">
                 {STATUS_ORDER.map((s, i) => {
                   const isCompleted = i < currentIdx;
                   const isCurrent = i === currentIdx;
@@ -393,18 +404,15 @@ export default async function JobDetailPage({
                 })}
               </div>
 
-              {/* Advance button */}
+              {/* Next stage hint */}
               {nextStatus && (
-                <button
-                  className="flex w-full items-center justify-center gap-2 rounded bg-[#C4A265] px-4 py-2.5 text-sm font-medium text-[#0A0A0A] transition-colors duration-200 hover:bg-[#D4B275]"
-                >
-                  Advance to {STATUS_LABELS[nextStatus]}
-                  <ChevronRight size={16} />
-                </button>
+                <p className="mt-4 text-xs text-[#555555]">
+                  Use the pipeline bar above to advance the stage.
+                </p>
               )}
 
               {!nextStatus && (
-                <div className="flex items-center justify-center gap-2 rounded bg-emerald-500/10 px-4 py-2.5 text-sm font-medium text-emerald-400">
+                <div className="mt-4 flex items-center justify-center gap-2 rounded bg-emerald-500/10 px-4 py-2.5 text-sm font-medium text-emerald-400">
                   <CheckCircle size={16} />
                   Job Complete
                 </div>
