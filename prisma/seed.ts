@@ -178,6 +178,32 @@ async function main() {
         lastContactedAt: daysAgo(6),
       },
     }),
+    // Ethan Rhodes — [13]
+    prisma.customer.create({
+      data: {
+        name: "Ethan Rhodes",
+        email: "ethan.rhodes@rhodescapital.com",
+        phone: "(310) 555-1901",
+        address: "22 Crystal Cove Shore, Newport Coast, CA 92657",
+        notes:
+          "Private equity. Wants a blacked-out Cullinan unlike anything on the road. Budget is not a concern — wants it perfect.",
+        tags: JSON.stringify(["vip", "high-value", "new"]),
+        lastContactedAt: daysAgo(4),
+      },
+    }),
+    // Julian Cross — [14]
+    prisma.customer.create({
+      data: {
+        name: "Julian Cross",
+        email: "julian.cross@icloud.com",
+        phone: "(949) 555-2244",
+        address: "5 Pelican Hill Rd, Newport Coast, CA 92657",
+        notes:
+          "Referred by Marcus Chen. Just took delivery of a GT2 RS from Porsche Laguna Hills. Wants full PPF + ceramic before the first track day.",
+        tags: JSON.stringify(["referral", "new", "track"]),
+        lastContactedAt: daysAgo(2),
+      },
+    }),
   ]);
 
   console.log(`Created ${customers.length} customers.`);
@@ -381,6 +407,69 @@ async function main() {
         color: "Frozen Marina Bay Blue",
         vin: "WBSAE0C07NCJ00444",
         notes: "Full body PPF — preserving the Frozen Bay Blue. Customer wants zero imperfections.",
+      },
+    }),
+    // Viktor Petrov second car — [17]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[4].id,
+        year: 2023,
+        make: "Ferrari",
+        model: "812 Competizione",
+        color: "Rosso Corsa",
+        notes:
+          "Second Ferrari. Wants XPEL Stealth PPF on the entire car — matte finish over the Rosso.",
+      },
+    }),
+    // Tyler Vang second car — [18]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[11].id,
+        year: 2024,
+        make: "Rolls-Royce",
+        model: "Ghost",
+        color: "Arctic White",
+        notes:
+          "Wants a full color change wrap to match the Flying Spur project. Something understated but custom.",
+      },
+    }),
+    // James Whitfield fourth car — [19]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[2].id,
+        year: 2024,
+        make: "Bugatti",
+        model: "Chiron Super Sport",
+        color: "French Racing Blue",
+        vin: "VF9SP3V31NM795001",
+        notes:
+          "The crown jewel of his collection. Full PPF + ceramic. Treat with the absolute highest care — irreplaceable.",
+      },
+    }),
+    // Ethan Rhodes — [20]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[13].id,
+        year: 2024,
+        make: "Rolls-Royce",
+        model: "Cullinan Black Badge",
+        color: "Obsidian Black",
+        vin: "SCA666D02RUX12001",
+        notes:
+          "Full black-out wrap — stealth matte black with gloss black accents. Chrome delete everything.",
+      },
+    }),
+    // Julian Cross — [21]
+    prisma.vehicle.create({
+      data: {
+        customerId: customers[14].id,
+        year: 2025,
+        make: "Porsche",
+        model: "911 GT2 RS",
+        color: "Guards Red",
+        vin: "WP0AE2A96SS270001",
+        notes:
+          "Track car. Full PPF + Gyeon quartz ceramic before first track day. Customer is very particular about surface prep.",
       },
     }),
   ]);
@@ -749,6 +838,81 @@ async function main() {
         finalPrice: 7200,
         depositAmount: 3600,
         depositPaid: true,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Pipeline Job 1 — James Whitfield Bugatti Chiron: Full PPF + Ceramic — INQUIRY [customers[2], vehicles[19]]
+    prisma.job.create({
+      data: {
+        customerId: customers[2].id,
+        vehicleId: vehicles[19].id,
+        type: "PPF",
+        status: "INQUIRY",
+        title: "Full PPF + Ceramic — Bugatti Chiron Super Sport",
+        description:
+          "Full body XPEL Ultimate Plus PPF with Ceramic Pro Finest package. Customer wants museum-level protection. Possibly the most valuable car we have ever touched.",
+        estimatedHours: 60,
+        quotedPrice: 28000,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Pipeline Job 2 — Ethan Rhodes Rolls-Royce Cullinan: Full Wrap + Blackout — INQUIRY [customers[13], vehicles[20]]
+    prisma.job.create({
+      data: {
+        customerId: customers[13].id,
+        vehicleId: vehicles[20].id,
+        type: "WRAP",
+        status: "INQUIRY",
+        title: "Full Stealth Wrap + Blackout — Cullinan Black Badge",
+        description:
+          "Complete color change to Satin Volcanic Black. Full chrome delete in Gloss Black. Emblems debadged and wrapped. Customer wants zero chrome visible.",
+        estimatedHours: 55,
+        quotedPrice: 24000,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Pipeline Job 3 — Tyler Vang Rolls-Royce Ghost: Color Change Wrap — INQUIRY [customers[11], vehicles[18]]
+    prisma.job.create({
+      data: {
+        customerId: customers[11].id,
+        vehicleId: vehicles[18].id,
+        type: "WRAP",
+        status: "INQUIRY",
+        title: "Color Change Wrap — Rolls-Royce Ghost",
+        description:
+          "Full color change wrap — customer wants to complement the chrome Flying Spur. Leaning toward Satin Charcoal with gloss black accents. Second project from Tyler.",
+        estimatedHours: 50,
+        quotedPrice: 18000,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Pipeline Job 4 — Julian Cross Porsche GT2 RS: Full PPF + Ceramic — QUOTED [customers[14], vehicles[21]]
+    prisma.job.create({
+      data: {
+        customerId: customers[14].id,
+        vehicleId: vehicles[21].id,
+        type: "PPF",
+        status: "QUOTED",
+        title: "Full PPF + Ceramic — 911 GT2 RS",
+        description:
+          "Full body XPEL Ultimate Plus PPF with 2-stage paint correction and Ceramic Pro 9H 4-layer top coat. Track-ready finish. Quote sent — awaiting sign-off.",
+        estimatedHours: 38,
+        quotedPrice: 18500,
+        photos: JSON.stringify([]),
+      },
+    }),
+    // Pipeline Job 5 — Viktor Petrov Ferrari 812: Full Stealth PPF — INQUIRY [customers[4], vehicles[17]]
+    prisma.job.create({
+      data: {
+        customerId: customers[4].id,
+        vehicleId: vehicles[17].id,
+        type: "PPF",
+        status: "INQUIRY",
+        title: "Full Stealth PPF — 812 Competizione",
+        description:
+          "Full body XPEL Stealth PPF to give a satin finish over the Rosso Corsa. Viktor's second Ferrari in the shop. Needs custom templates for the 812 body kit.",
+        estimatedHours: 42,
+        quotedPrice: 14500,
         photos: JSON.stringify([]),
       },
     }),
